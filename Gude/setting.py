@@ -39,10 +39,10 @@ tag:        []
 """
 
 # 支持的文章文件名后缀 
-ARTICLE_EXTENSION =['md', 'markdown' 'html']
+ARTICLE_EXTENSION =['md', 'markdown', 'html']
 
-# 忽略的文章目录
-ARTICLE_EXCLUDE_DIR = ['tag', 'category']
+# 忽略的文章目录         标签    分类        存档        文章单页
+ARTICLE_EXCLUDE_DIR = ['tag', 'category', 'archive', 'article']
 
 HELP_DOC = """
     init [-f]
