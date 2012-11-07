@@ -4,6 +4,7 @@ from datetime import datetime
 
 import yaml
 from mako.lookup import TemplateLookup
+from commando.commando import *
 
 import util, setting, server
 from article import Article, Tag, Category, Archive, Home
@@ -104,15 +105,12 @@ class Database:
         #map(lambda a: print('   ' + a.source), self.articles.articles)
 
 
-class Gude(object):
+class Gude(Application):
     ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
 
     def __init__(self):
         if not os.path.exists(DEFAULT_CONFIG_FILE):
             util.die('config file [%s] is non-existent.' % DEFAULT_CONFIG_FILE)
-        util.log('current time = %s' % datetime.now())
-        util.log('SCRIPT_PATH = %s' % SCRIPT_PATH)
-        util.log('site path = %s' % SITE_PATH)
 
         # 配置
         self.config = DEFAULT_CONFIG
@@ -122,7 +120,6 @@ class Gude(object):
             for k, v in yaml.load(f).items():
                 k = util.stdKey(k)
                 self.config[k] = v
-        util.log('site config = %s' % self.config)
 
         # 模板
         template_dir = os.path.join(SITE_PATH, 'layout')
@@ -131,26 +128,22 @@ class Gude(object):
         # 数据库
         self.db = Database(self)
 
-    def main(self):
-        subcommand = util.subcommand();
-        util.log('sub command = %s' % subcommand)
-        if subcommand == 'init':
-            self.init()
-        elif subcommand == 'build':
-            self.build()
-        elif subcommand == 'add':
-            self.add()
-        elif subcommand == 'serve':
-            server.run()
-        else:
-            print setting.HELP_DOC
+    def run(self, args=None):
+        super(Gude, self).run(args)
+
+    @command(description='hyde - a python static website generator', 
+        epilog='Use %(prog)s {command} -h to get help on individual commands')
+    @version('-v', version='%(prog)s ' + setting.VERSION)
+    def main(self, args):
         pass
 
-    def init(self):
+    @subcommand('init', help='Create a new hyde site.')
+    @true('-f', '--force', default=False, dest='overwrite', help='Overwrite the current site if it exists')
+    def init(self, args):
         if os.listdir(SITE_PATH) and (not util.isOptExists('f')):
             util.die(u" %s is not empty" % SITE_PATH)
         # 强制 删除旧的文件
-        if util.isOptExists('f'):
+        if args.overwrite:
             for exist_file in os.listdir(SITE_PATH):
                 abs_path = os.path.join(SITE_PATH, exist_file)
                 shutil.rmtree(abs_path) if os.path.isdir(abs_path) else os.remove(abs_path)
@@ -162,7 +155,9 @@ class Gude(object):
             print src, dst
             shutil.copytree(src, dst) if os.path.isdir(src) else shutil.copy(src, dst)
 
-    def build(self):
+    @subcommand('build', help='build a new hyde site.')
+    @version('-f', default=False, dest='overwrite')
+    def build(self, args):
         # 删除发布目录
         #+ 添加判断
         if os.path.isdir(self.deployPath):
@@ -187,19 +182,28 @@ class Gude(object):
         # 导出
         self.db.export()
 
-    def add(self):
-        filename = sys.argv[2] + ".md"
-        header = setting.ARTICLE_TEMPLATE % time.date.strftime('%Y-%m-%d %H:%M:%S', datetime.now())
-        article_filename = os.path.join(self.getArticlePath(), filename)
+    @subcommand('add', help='add new article')
+    @store('-n', '-name', default='', dest='filename', help='filename')
+    @true('--html', default=False, dest='is_html', help='HTML type')
+    def add(self, args):
+        if not args.filename:
+            print 'fail'
+            return
+        extension = '.md'
+        if args.is_html:
+            extension = '.html'
+        filename = args.filename + extension
+        #+ 检查文件是否存在 文件名相同即有问题 后缀不重要
+        header = setting.ARTICLE_TEMPLATE % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        article_filename = os.path.join(self.articlePath, filename)
         with codecs.open(article_filename, 'w', encoding='utf-8') as fp:
             fp.write(header)
 
-    def fetchAllArticles(self):
-        def traverseDir(dir):
-            pass
-        #files = os.listdir(self.articlePath)
-        pass
-        
+    @subcommand('serve', help='Serve the website')
+    @store('-p', '-port', type=int, default=8910, dest='port', help='The port where the website must be served from.')
+    def serve(self, args):
+        server.run(args.port)
+
     def generateUrl(self, *parts, **kwargs):
         subs = [self.config['subdirectory']]
         subs.extend(parts)
@@ -280,5 +284,4 @@ class Gude(object):
         return category.lower() in map(lambda c: c.lower(), self.config['category'])
 
 if __name__ == '__main__':
-    site = Gude()
-    site.main()
+    Gude().run()

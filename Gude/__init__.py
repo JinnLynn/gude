@@ -7,5 +7,4 @@ def run():
     sys.path.insert(0, os.path.join(SCRIPT_PATH, 'libs'))
 
     from core import Gude
-    site = Gude()
-    site.main()
+    Gude().run()

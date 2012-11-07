@@ -4,6 +4,9 @@ import os
 # 是否开发模式
 DEV_MODE = True
 
+# 版本
+VERSION = '0.1'
+
 # 默认测试服务器端口
 DEFAULT_SERVER_PORT = 8910
 
