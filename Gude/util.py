@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 import sys, re, urllib
+import setting
 from setting import DEV_MODE
 from setting import SITE_PATH
 
@@ -40,3 +41,7 @@ def isOptExists(opt):
 def getRelativePath(abspath):
     assert abspath.find(SITE_PATH) == 0, 'path error. %s' % abspath
     return abspath[len(SITE_PATH)+1:]
+
+def self():
+    return 'Gude %s' % setting.VERSION
+    pass

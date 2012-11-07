@@ -4,7 +4,7 @@ from datetime import datetime
 
 import yaml
 from markdown import markdown
-from mako.lookup import TemplateLookup
+import PyRSS2Gen.PyRSS2Gen as RSS2Gen 
 
 import util
 from setting import SITE_PATH
@@ -91,11 +91,17 @@ class Article(object):
                 line = '<span id="more-%s"></span>' % self.unique
             self.content += line
 
+        self.content.strip()
+        self.summary.strip()
+
         # 处理 html 与 markdown 格式
-        
         if self.isMarkdown():
             self.content = markdown(self.content)
             self.summary = markdown(self.summary)
+
+        # 摘要
+        if not self.summary:
+            self.summary = self.content
 
         return True
 
@@ -157,6 +163,17 @@ class Article(object):
     def output():
         return 'dsf'
         pass
+
+    def getFeedItem(self):
+
+        return RSS2Gen.RSSItem(
+            title = self.title, 
+            link = self.permalink, 
+            guid = RSS2Gen.Guid(self.permalink),
+            description = self.summary,
+            pubDate = self.date,
+            #categories = tags, 
+            )
 
 """ 页面导航信息 """
 class PageNav(object):
@@ -354,4 +371,33 @@ class Tag(ArticleBundle):
 
     @property
     def exportDir(self):
-        return 'tag/%s' % self.tag_slug      
+        return 'tag/%s' % self.tag_slug 
+
+class Feed(ArticleBundle):
+    """ Feed的输出 """
+    def __init__(self, site, archive):
+        super(Feed, self).__init__(site)
+        self.articles = archive.articles
+
+    # 忽略输出方法
+    def export(self):
+
+        self.sortByDateDESC()
+        num = self.site.numInFeed;
+        articles = []
+        if len(self.articles) >= num:
+            articles = self.articles[0:num]
+        else:
+            articles = self.articles[0:]
+
+        feed = RSS2Gen.RSS2(
+            title = self.site.siteTitle,
+            link = self.site.siteUrl,
+            description = self.site.siteTagline,
+            lastBuildDate = datetime.now(),
+            items = [ a.getFeedItem() for a in articles ],
+            generator = util.self()
+            )
+
+        with open(os.path.join(self.site.deployPath, 'feed.rss'), 'w') as fp:
+                feed.write_xml(fp, 'utf-8')

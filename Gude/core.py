@@ -7,7 +7,7 @@ from mako.lookup import TemplateLookup
 from commando.commando import *
 
 import util, setting, server
-from article import Article, Tag, Category, Archive, Home
+from article import *
 from setting import DEFAULT_CONFIG_FILE
 from setting import DEFAULT_CONFIG
 from setting import SCRIPT_PATH
@@ -33,6 +33,9 @@ class Database:
         self.exportCategories()
         # 输出首页
         self.exportHome()
+
+        feed = Feed(self.site, self.archive)
+        feed.export()
         pass
 
     """ 输出文章 """
@@ -131,13 +134,13 @@ class Gude(Application):
     def run(self, args=None):
         super(Gude, self).run(args)
 
-    @command(description='hyde - a python static website generator', 
+    @command(description='Gude - a simple python static website generator', 
         epilog='Use %(prog)s {command} -h to get help on individual commands')
     @version('-v', version='%(prog)s ' + setting.VERSION)
     def main(self, args):
         pass
 
-    @subcommand('init', help='Create a new hyde site.')
+    @subcommand('init', help='Create a new site.')
     @true('-f', '--force', default=False, dest='overwrite', help='Overwrite the current site if it exists')
     def init(self, args):
         if os.listdir(SITE_PATH) and (not util.isOptExists('f')):
@@ -155,7 +158,7 @@ class Gude(Application):
             print src, dst
             shutil.copytree(src, dst) if os.path.isdir(src) else shutil.copy(src, dst)
 
-    @subcommand('build', help='build a new hyde site.')
+    @subcommand('build', help='build a new site.')
     @version('-f', default=False, dest='overwrite')
     def build(self, args):
         # 删除发布目录
@@ -200,7 +203,7 @@ class Gude(Application):
             fp.write(header)
 
     @subcommand('serve', help='Serve the website')
-    @store('-p', '-port', type=int, default=8910, dest='port', help='The port where the website must be served from.')
+    @store('-p', '--port', type=int, default=8910, dest='port', help='The port where the website must be served from.')
     def serve(self, args):
         server.run(args.port)
 
@@ -256,14 +259,35 @@ class Gude(Application):
     def numPerPage(self):
         return self.config['num_per_page']
 
+    # Feed输出的文章数量
+    def numInFeed(self):
+        return 10 #+ 可配置
+
     # 配置属性
     @property
     def siteAuthor(self):
-        return self.config['author']
+        return self.config.get('author', '')
 
     @property
+    def siteDomain(self):
+        return '%s/' % self.config.get('domain', 'http://localhost/').strip(' /')
+        
+    @property
     def siteUrl(self):
-        return self.generateUrl()
+        subdirectory = self.config.get('subdirectory', '').strip('/')
+        subdirectory = re.sub('//+', '/', subdirectory)
+        if subdirectory:
+            subdirectory += '/'
+        return self.siteDomain + subdirectory
+
+    @property
+    def siteTitle(self):
+        return self.config.get('title', '')
+
+    @property
+    def siteTagline(self):
+        return self.config.get('tagline', '')
+        pass
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):
