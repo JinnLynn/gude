@@ -5,8 +5,7 @@ from datetime import datetime
 import libs.yaml as yaml
 from mako.lookup import TemplateLookup
 
-import util
-import setting
+import util, setting, server
 from article import Article, Tag, Category, Home
 from setting import DEFAULT_CONFIG_FILE
 from setting import DEFAULT_CONFIG
@@ -137,7 +136,7 @@ class Gude(object):
         elif subcommand == 'add':
             self.add()
         elif subcommand == 'serve':
-            self.start()
+            server.run()
         else:
             print setting.HELP_DOC
         pass

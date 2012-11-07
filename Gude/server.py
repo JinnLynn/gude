@@ -1,44 +1,16 @@
 # -*- coding: utf-8 -*-
-import SimpleHTTPServer, BaseHTTPServer
-import os
+from SimpleHTTPServer import SimpleHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
+import sys, os
 
-import os
-import posixpath
-import BaseHTTPServer
-import urllib
-import cgi
-import sys
-import shutil
-import mimetypes
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+from setting import DEFAULT_SERVER_PORT
 
-class Server(SimpleHTTPServer.SimpleHTTPRequestHandler):
-    def translate_path(self, path):
-        print path
-        path = path.split('?',1)[0]
-        path = path.split('#',1)[0]
-        path = posixpath.normpath(urllib.unquote(path))
-        words = path.split('/')
-        words = filter(None, words)
-        print words
-        path = os.getcwd()
-        for word in words:
-            drive, word = os.path.splitdrive(word)
-            head, word = os.path.split(word)
-            if word in (os.curdir, os.pardir): continue
-            path = os.path.join(path, word)
-        print path
-        return path
-
-
-def start():
+def run():
+    port = DEFAULT_SERVER_PORT
+    if sys.argv[2:]:
+        port = int(sys.argv[2:][1])
     os.chdir('deploy')
-    server_address = ('', 8910)
-    handler_class = Server
-    server_class = BaseHTTPServer.HTTPServer
-    httpd = server_class(server_address, handler_class)
+    httpd = HTTPServer(('', port), SimpleHTTPRequestHandler)
+    print 'Webserver [http://localhost:%d] starting...' % port
     httpd.serve_forever()
     pass
