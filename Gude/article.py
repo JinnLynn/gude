@@ -123,7 +123,7 @@ class Article(object):
     
         data = {'site': self.site, 'article': self}
 
-        template = self.site.lookup.get_template(util.tplFile(self.layout))
+        template = self.site.getTemplate(self.layout)
         html = template.render_unicode(**data).strip()
         with open(self.exportFilePath, 'w') as f:
             f.write(html.encode('utf-8'))
@@ -201,8 +201,9 @@ class ArticleBundle(object):
 
     def export(self):
         self.sortByDateDESC()
-        template = self.getTemplate()
-        assert template, 'template is non-existent'
+
+        template = self.site.getTemplate(self.templateName)
+        assert template, "template '%s' is non-existent" % self.templateName
 
         first_page_name, other_page_name = self.exportBasename
         pagenav = PageNav(self.articles, self.numPerPage, first_page_name, other_page_name)
@@ -240,6 +241,10 @@ class ArticleBundle(object):
     @property
     def permalink(self):
         return self.site.siteUrl;
+
+    @property
+    def templateName(self):
+        return ''
 
     # 输出目录 相对deploy
     @property
@@ -279,6 +284,10 @@ class Archive(ArticleBundle):
         return self.site.generateUrl(self.exportDir)
 
     @property
+    def templateName(self):
+        return 'archive'
+
+    @property
     def exportDir(self):
         return 'archive'
 
@@ -295,8 +304,9 @@ class Home(ArticleBundle):
         assert isinstance(archive, Archive)
         self.articles = archive.articles
 
-    def getTemplate(self):
-        return self.site.lookup.get_template(util.tplFile('archive'))
+    @property
+    def templateName(self):
+        return 'home'
 
 class Category(ArticleBundle):
     """ 分类 """
@@ -309,8 +319,9 @@ class Category(ArticleBundle):
         print 'Category: %s %s %d' % (self.category_name, self.category_slug, self.count)
         super(Category, self).testPrint()
 
-    def getTemplate(self):
-        return self.site.lookup.get_template(util.tplFile('home'))
+    @property
+    def templateName(self):
+        return 'category'
 
     @property
     def permalink(self):
@@ -333,8 +344,9 @@ class Tag(ArticleBundle):
         print 'Tag: %s %s %d' % (self.tag_name, self.tag_slug, self.count)
         super(Tag, self).testPrint()
 
-    def getTemplate(self):
-        return self.site.lookup.get_template(util.tplFile('home'))
+    @property
+    def templateName(self):
+        return 'tag'
 
     @property
     def permalink(self):

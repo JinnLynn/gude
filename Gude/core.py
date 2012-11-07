@@ -56,7 +56,7 @@ class Database:
 
         data = {'site': self.site, 'tags': tags}
 
-        template = self.site.lookup.get_template(util.tplFile('tags'))
+        template = self.site.getTemplate('tags')
         html = template.render_unicode(**data).strip()
         with open(os.path.join(self.site.deployPath, 'tags.html'), 'w') as f:
             f.write(html.encode('utf-8'))
@@ -222,6 +222,10 @@ class Gude(object):
         if ext[1:] in ARTICLE_EXTENSION:
             return True
         return False
+
+    def getTemplate(self, name):
+        return self.lookup.get_template(util.tplFile(str(name)))
+        pass
 
     # 静态文件路径
     @property

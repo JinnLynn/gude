@@ -20,7 +20,7 @@ DEFAULT_CONFIG = {
     'articles_per_page':    5,
     'categories':           [],
 
-    'default_layout':       'post-def',
+    'default_layout':       'post',
     'extension':            'html'
 }
 
