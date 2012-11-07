@@ -6,7 +6,7 @@ import libs.yaml as yaml
 from mako.lookup import TemplateLookup
 
 import util, setting, server
-from article import Article, Tag, Category, Archive
+from article import Article, Tag, Category, Archive, Home
 from setting import DEFAULT_CONFIG_FILE
 from setting import DEFAULT_CONFIG
 from setting import SCRIPT_PATH
@@ -30,6 +30,8 @@ class Database:
         self.exportTags()
         # 输出分类
         self.exportCategories()
+        # 输出首页
+        self.exportHome()
         pass
 
     """ 输出文章 """
@@ -60,6 +62,11 @@ class Database:
             f.write(html.encode('utf-8'))
 
         map(lambda t: t.export(), tags)
+
+    def exportHome(self):
+        home = Home(self.site)
+        home.importArticleFromArchive(self.archive)
+        home.export()
 
     def fetchTags(self):
         tags = {}
@@ -243,8 +250,12 @@ class Gude(object):
 
     # 配置属性
     @property
-    def author(self):
+    def siteAuthor(self):
         return self.config['author']
+
+    @property
+    def siteUrl(self):
+        return self.generateUrl()
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):

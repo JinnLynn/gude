@@ -39,7 +39,7 @@ class Article(object):
         self.layout = 'post'
         self.title = 'untitled'
         self.date = None
-        self.author = self.site.author
+        self.author = self.site.siteAuthor
         self.tags = []
         self.category = []
 
@@ -72,7 +72,7 @@ class Article(object):
         
         self.layout     = config.get('layout', 'post')
         self.title      = config.get('title', 'untitled')
-        self.author     = config.get('author', self.site.author)
+        self.author     = config.get('author', self.site.siteAuthor)
         self.date       = config.get('date', None)
         self.tag        = config.get('tag', [])
         self.category   = config.get('category', [])
@@ -233,14 +233,13 @@ class ArticleBundle(object):
     def getTemplate(self):
         return None
 
-    # 输出文件信息 返回为 [相对发布目录的文件夹路径, 第一页文件名, 其它页文件名（带页数格式化%d）]
-    #! 文件名不包括后缀
-    def getExportFileInfo(self):
-        return ['', '', '']
-
     @property
     def count(self):
         return len(self.articles)
+
+    @property
+    def permalink(self):
+        return self.site.siteUrl;
 
     # 输出目录 相对deploy
     @property
@@ -250,7 +249,7 @@ class ArticleBundle(object):
     # 输出文件名称（不包括后缀） [第一页文件名, 其它页文件名（带页数格式化%d）]
     @property
     def exportBasename(self):
-        return ['', '']
+        return ['index', 'page-%d']
 
     # 每页文章数目
     @property
@@ -258,9 +257,7 @@ class ArticleBundle(object):
         return self.site.numPerPage
 
 class Archive(ArticleBundle):
-    """存档 
-    存档页 文章单页的输出
-    """
+    """ 存档 存档页 文章单页的输出 """
     def __init__(self, site):
         super(Archive, self).__init__(site)
 
@@ -279,23 +276,30 @@ class Archive(ArticleBundle):
 
     @property
     def permalink(self):
-        return self.site.generateUrl(self.exportDir, self.category_slug)
+        return self.site.generateUrl(self.exportDir)
 
     @property
     def exportDir(self):
         return 'archive'
-        
-    @property
-    def exportBasename(self):
-        return ['index', 'page-%d']
 
     @property
     def numPerPage(self):
         return 50 #+ 需可配置
 
+class Home(ArticleBundle):
+    """ 首页的输出 """
+    def __init__(self, site):
+        super(Home, self).__init__(site)
+
+    def importArticleFromArchive(self, archive):
+        assert isinstance(archive, Archive)
+        self.articles = archive.articles
+
+    def getTemplate(self):
+        return self.site.lookup.get_template(util.tplFile('archive'))
+
 class Category(ArticleBundle):
-    """分类 
-    """
+    """ 分类 """
     def __init__(self, site, category):
         super(Category, self).__init__(site)
         self.category_name = category
@@ -315,11 +319,6 @@ class Category(ArticleBundle):
     @property
     def exportDir(self):
         return 'category/%s' % self.category_slug
-
-    @property
-    def exportBasename(self):
-        return ['index', 'page-%d']
-
 
 class Tag(ArticleBundle):
     """标签 
@@ -343,8 +342,4 @@ class Tag(ArticleBundle):
 
     @property
     def exportDir(self):
-        return 'tag/%s' % self.tag_slug
-
-    @property
-    def exportBasename(self):
-        return ['index', 'page-%d']        
+        return 'tag/%s' % self.tag_slug      
