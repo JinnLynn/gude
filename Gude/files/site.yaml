@@ -1,0 +1,3 @@
+domain: 'http://localhost/'
+root: '/'
+article_per_page: 5

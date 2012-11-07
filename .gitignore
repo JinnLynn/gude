@@ -1,0 +1,16 @@
+*.pac
+*.pyc
+test/
+Gude/libs/
+Gude/test.py
+
+# Windows
+[Dd]esktop.ini
+[Tt]humbs.db
+$RECYCLE.BIN/
+
+# MacOSX
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
