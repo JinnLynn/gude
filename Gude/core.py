@@ -6,7 +6,7 @@ import libs.yaml as yaml
 from mako.lookup import TemplateLookup
 
 import util, setting, server
-from article import Article, Tag, Category, Home
+from article import Article, Tag, Category, Archive
 from setting import DEFAULT_CONFIG_FILE
 from setting import DEFAULT_CONFIG
 from setting import SCRIPT_PATH
@@ -17,11 +17,11 @@ from setting import ARTICLE_EXCLUDE_DIR
 class Database:
     def __init__(self, site):
         self.site = site
-        self.articles = Home(self.site)
+        self.archive = Archive(self.site)
         
 
     def add(self, article):
-        self.articles.addArticle(article)
+        self.archive.addArticle(article)
 
     def export(self):
         # 输出文章
@@ -34,10 +34,8 @@ class Database:
 
     """ 输出文章 """
     def exportArticles(self):
-        # 输出文章
-        self.articles.exportAllArticles()
         # 输出文章列表页 包括首页
-        self.articles.export()
+        self.archive.export()
         pass
 
     """ 输出分类页 """
@@ -65,7 +63,7 @@ class Database:
 
     def fetchTags(self):
         tags = {}
-        for article in self.articles.articles:
+        for article in self.archive.articles:
             for tag in article.tag:
                 slug = util.encodeURIComponent(tag)
                 if slug in tags.keys():
@@ -77,7 +75,7 @@ class Database:
 
     def fetchCategories(self):
         categories = {}
-        for article in self.articles.articles:
+        for article in self.archive.articles:
             for category in article.category:
                 if not self.site.isValidCategory(category):
                     print 'category name "%s" in "%s" is unavailable' % (category, util.getRelativePath(article.source))
