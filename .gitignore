@@ -1,7 +1,6 @@
 *.pac
 *.pyc
 test/
-Gude/libs/
 Gude/test.py
 
 # Windows

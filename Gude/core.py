@@ -2,7 +2,7 @@
 import sys, os, shutil, codecs, re
 from datetime import datetime
 
-import libs.yaml as yaml
+import yaml
 from mako.lookup import TemplateLookup
 
 import util, setting, server
