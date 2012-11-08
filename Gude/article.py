@@ -141,22 +141,25 @@ class Article(object):
     # 永久链接  
     @property
     def permalink(self):
-        return self.site.generateUrl(self.exportDir, self.exportBasename)
+        return self.site.generateUrl(self.exportDir, self.sourceBasename)
 
     # 导出文件的绝对路径
     @property
     def exportFilePath(self):
-        return self.site.generateDeployFilePath(self.exportDir, self.exportBasename)
+        return self.site.generateDeployFilePath(self.exportDir, self.sourceBasename)
 
     @property
     def exportDir(self):
-        #! self.source 可能包括子文件夹
+        #! 当 self.source 包括子文件夹时使用自身 如果没有则统一放入article目录
         dirname, basename = os.path.split(self.source)
         dirname = dirname[len( self.site.articlePath )+1:].strip(' /')
-        return os.path.join('article', dirname)
+        if not dirname:
+            dirname += 'article'
+        return dirname
 
+    # 源文件的文件名（不包括后缀）
     @property
-    def exportBasename(self):
+    def sourceBasename(self):
         return os.path.splitext(os.path.split(self.source)[1])[0]
 
     def getFeedItem(self):
@@ -202,7 +205,6 @@ class ArticleBundle(object):
     def __init__(self, site):
         self.site = site
         self.articles = []
-        self.totalPageNum = 1
 
     def addArticle(self, article):
         if not isinstance (article, Article):
@@ -212,32 +214,39 @@ class ArticleBundle(object):
         self.articles.append(article)
 
     def export(self):
+        self.printSelf()
+
+        if self.count <= 0:
+            return
+        template =None
+        try:
+            template = self.site.getTemplate(self.templateName)
+        except Exception, e:
+            assert template, "template '%s' is non-existent" % self.templateName
+        
         self.sortByDateDESC()
 
-        template = self.site.getTemplate(self.templateName)
-        assert template, "template '%s' is non-existent" % self.templateName
+        paged_articles = self.getPagedArticles()
+        total_page_num = self.totalPageNum
 
-        first_page_name, other_page_name = self.exportBasename
-        pagenav = PageNav(self.articles, self.numPerPage, first_page_name, other_page_name)
-        self.totalPageNum  = pagenav.getPageCount()
+        for i in range(1, total_page_num + 1):
 
-        for i in range(1, self.totalPageNum +1):
+            articles = paged_articles[i - 1]
+            export_file_path = self.site.generateDeployFilePath(self.exportDir, page=i)
 
-            articles, deploy_file_name = pagenav.getDataByPageNum(i)
-            export_file_path = self.site.generateDeployFilePath(self.exportDir, deploy_file_name)
+            self.curPageNum = i
 
             # 检查输出目录
             util.tryMakeDirForFile(export_file_path)
 
-            data = {'site': self.site, 'articles': articles, 'pagenav': {'cur_page': i, 'total_page': self.totalPageNum }}
+            data = {'site': self.site, 'articles': articles}
             html = template.render_unicode(**data).strip()
             with open(export_file_path, 'w') as f:
                 f.write(html.encode('utf-8'))
+            print '   => %s' % self.site.getRelativePath(export_file_path)
 
-    def testPrint(self):
+    def printSelf(self):
         return
-        for a in self.articles:
-            print '   ', util.getRelativePath(a.source)
 
     # 按日期倒序排序
     def sortByDateDESC(self):
@@ -253,15 +262,11 @@ class ArticleBundle(object):
 
     @property
     def permalink(self):
-        return self.site.generateUrl(self.exportDir, isdir=True)
+        return self.site.generateUrl(self.exportDir)
 
-    @property
-    def pagePermalink(self, page_num):
+    def getPagePermalink(self, page_num):
         assert 0 < page_num <= self.totalPageNum, 'page number must in 1 - %d' % self.totalPageNum
-        first, other = self.exportBasename;
-        if page_num == 1:
-            return self.site.generateUrl(self.exportDir, first)
-        return self.site.generateUrl(self.exportDir, other % page_num)
+        return self.site.generateUrl(self.exportDir, page_num)
 
     @property
     def templateName(self):
@@ -272,15 +277,28 @@ class ArticleBundle(object):
     def exportDir(self):
         return ''
 
-    # 输出文件名称（不包括后缀） [第一页文件名, 其它页文件名（带页数格式化%d）]
-    @property
-    def exportBasename(self):
-        return ['index', 'page-%d']
-
     # 每页文章数目
     @property
     def numPerPage(self):
         return self.site.numPerPage
+
+    @property
+    def totalPageNum(self):
+        count = len(self.articles) / self.numPerPage;
+        if len(self.articles) % self.numPerPage > 0:
+            count += 1
+        return count
+
+    def getPagedArticles(self):
+        paged = []
+        total = self.totalPageNum
+        for i in range(0, total):
+            start = self.numPerPage * i
+            if i == total - 1:
+                paged.append( self.articles[start:] )
+            else:
+                paged.append( self.articles[start:self.numPerPage] )
+        return paged
 
 class Archive(ArticleBundle):
     """ 存档 存档页 文章单页的输出 """
@@ -294,8 +312,8 @@ class Archive(ArticleBundle):
         # 输出存档页
         super(Archive, self).export()
 
-    def testPrint(self):
-        pass
+    def printSelf(self):
+        print 'Archive:'
 
     def getTemplate(self):
         return self.site.lookup.get_template(util.tplFile('archive'))
@@ -321,6 +339,9 @@ class Home(ArticleBundle):
         assert isinstance(archive, Archive)
         self.articles = archive.articles
 
+    def printSelf(self):
+        print 'Home: %s' % self.permalink
+
     @property
     def templateName(self):
         return 'home'
@@ -331,9 +352,8 @@ class Category(ArticleBundle):
         super(Category, self).__init__(site)
         self.category_name = category
 
-    def testPrint(self):
+    def printSelf(self):
         print 'Category: %s %d %s' % (self.category_name, self.count, self.permalink)
-        super(Category, self).testPrint()
 
     @property
     def templateName(self):
@@ -351,9 +371,8 @@ class Tag(ArticleBundle):
         super(Tag, self).__init__(site)
         self.tag_name = tag
 
-    def testPrint(self):
+    def printSelf(self):
         print 'Tag: %s %d %s' % (self.tag_name, self.count, self.permalink)
-        super(Tag, self).testPrint()
 
     @property
     def templateName(self):

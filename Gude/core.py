@@ -32,7 +32,6 @@ class Database:
         self.exportTags()
 
         categories = self.fetchCategories()
-        map(lambda c: c.testPrint(), categories)
         map(lambda c: c.export(), categories)
 
         # 输出首页
@@ -43,20 +42,20 @@ class Database:
         # 输出Feed
         feed = Feed(self.site, self.archive)
         feed.export()
-        pass
 
     """ 输出标签页 """
     def exportTags(self):
         tags = self.fetchTags()
-        map(lambda t: t.testPrint(), tags)
         # 按标记文章数排序
         tags = sorted(tags, cmp = lambda a, b: a.count > b.count)
 
         data = {'site': self.site, 'tags': tags}
 
+        util.tryMakeDirForFile(os.path.join(self.site.deployPath, 'tags/index.html'))
+
         template = self.site.getTemplate('tags')
         html = template.render_unicode(**data).strip()
-        with open(os.path.join(self.site.deployPath, 'tags.html'), 'w') as f:
+        with open(os.path.join(self.site.deployPath, 'tags/index.html'), 'w') as f:
             f.write(html.encode('utf-8'))
 
         map(lambda t: t.export(), tags)        
@@ -197,30 +196,35 @@ class Gude(Application):
     def serve(self, args):
         server.run(args.port)
 
-    # 生成地址
+    # 生成地址 默认: 文件夹
     def generateUrl(self, *parts, **kwargs):
-        isdir = kwargs.get('isdir', False)   # 目录地址
-        hasext = kwargs.get('hasext', False) # 已经有后缀
+        isfile = kwargs.get('isfile', False)   # 是文件？
+        page = kwargs.get('page', 1)           # 分页
+        assert type(page) == int and page >= 1, 'page must be INT and >= 1. '
         is_url_quoted = kwargs.get('quoted', False) # 地址已转换成url组件
         site_url = self.siteUrl;
-        sub_url = re.sub('//+', '/', '/'.join(unicode(s) for s in parts if s)).strip('/')
+        sub_url = util.standardizePath('/'.join(unicode(s) for s in parts if s)).strip('/')
         if not is_url_quoted:
             sub_url = util.urlQuote(sub_url)
-        if isdir:
-            return '%s%s/' % (site_url, sub_url)
-        if hasext:
+        if page != 1:
+            sub_url += '/page/%d' % page
+        if isfile:
             return '%s%s' % (site_url, sub_url)
-        return "%s%s.%s" % (site_url, sub_url, self.exportFileExtension)
+        return "%s%s/" % (site_url, sub_url.rstrip('/'))
 
-    # 生成发布文件路径
+    # 生成发布文件路径 默认: 在文件夹下生成index.html文件
     def generateDeployFilePath(self, *parts, **kwargs):
-        hasext = kwargs.get('hasext', False) # 已经有后缀
+        assign = kwargs.get('assign', False) # 指定了文件名
+        page = kwargs.get('page', 1)
+        assert type(page) == int and page >= 1, 'page must be INT and >= 1. '
         deploy_file_path = self.deployPath
         for s in parts:
-            deploy_file_path = os.path.join(deploy_file_path, s)
-        if hasext:
+            deploy_file_path = os.path.join(deploy_file_path, util.standardizePath(s))
+        if page != 1:
+            deploy_file_path = os.path.join(deploy_file_path, 'page/%d' % page)
+        if assign:
             return deploy_file_path
-        return '%s.%s' % (deploy_file_path, self.exportFileExtension)
+        return os.path.join(deploy_file_path, 'index.html')
 
     def getPathInSite(self, filename):
         return os.path.join(SITE_PATH, filename)
@@ -243,17 +247,12 @@ class Gude(Application):
     # 原始文章路径
     @property
     def articlePath(self):
-        return os.path.join(SITE_PATH, 'article')
+        return os.path.join(SITE_PATH, 'content')
 
     # 发布路径
     @property
     def deployPath(self):
         return os.path.join(SITE_PATH, 'deploy')
-
-    # 导出文件后缀
-    @property
-    def exportFileExtension(self):
-        return self.config.get('extension', 'html')
 
     @property
     def exportFeedFile(self):

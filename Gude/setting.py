@@ -41,8 +41,8 @@ tag:        []
 # 支持的文章文件名后缀 
 ARTICLE_EXTENSION =['md', 'markdown', 'html']
 
-# 忽略的文章目录         标签    分类        存档        文章单页
-ARTICLE_EXCLUDE_DIR = ['tag', 'category', 'archive', 'article']
+# 忽略的文章目录         标签    所有标签  分类        存档        文章 默认位置   资源       首页分页
+ARTICLE_EXCLUDE_DIR = ['tag', 'tags',  'category', 'archive', 'article',    'assets', 'page' ]
 
 HELP_DOC = """
     init [-f]

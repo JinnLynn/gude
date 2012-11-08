@@ -10,6 +10,10 @@ stdKey = lambda s: re.sub('[- ]+', '_', s.lower())
 tplFile = lambda s: '%s.mako' % s
 # 创建slug 使用urlQuote
 generateSlug = lambda s: urlQuote(s)
+# 清理/ 多于一个的/将整理为一个
+cleanSlash = lambda s: re.sub('//+', '/', s)
+# 标准话路径： 联系多个'-'转为一个 空格转为 '-'
+standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
 
 
 # 如果文件夹不存在则创建
