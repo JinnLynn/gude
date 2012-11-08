@@ -25,30 +25,24 @@ class Database:
         self.archive.addArticle(article)
 
     def export(self):
-        # 输出文章
-        self.exportArticles()
-        # 输出标签
-        self.exportTags()
-        # 输出分类
-        self.exportCategories()
-        # 输出首页
-        self.exportHome()
-
-        feed = Feed(self.site, self.archive)
-        feed.export()
-        pass
-
-    """ 输出文章 """
-    def exportArticles(self):
         # 输出文章列表页 包括首页
         self.archive.export()
-        pass
 
-    """ 输出分类页 """
-    def exportCategories(self):
+        # 输出标签
+        self.exportTags()
+
         categories = self.fetchCategories()
         map(lambda c: c.testPrint(), categories)
         map(lambda c: c.export(), categories)
+
+        # 输出首页
+        home = Home(self.site)
+        home.importArticleFromArchive(self.archive)
+        home.export()
+
+        # 输出Feed
+        feed = Feed(self.site, self.archive)
+        feed.export()
         pass
 
     """ 输出标签页 """
@@ -65,18 +59,13 @@ class Database:
         with open(os.path.join(self.site.deployPath, 'tags.html'), 'w') as f:
             f.write(html.encode('utf-8'))
 
-        map(lambda t: t.export(), tags)
-
-    def exportHome(self):
-        home = Home(self.site)
-        home.importArticleFromArchive(self.archive)
-        home.export()
+        map(lambda t: t.export(), tags)        
 
     def fetchTags(self):
         tags = {}
         for article in self.archive.articles:
             for tag in article.tag:
-                slug = util.encodeURIComponent(tag)
+                slug = util.generateSlug(tag)
                 if slug in tags.keys():
                     tags[slug].addArticle(article)
                 else:
@@ -91,7 +80,7 @@ class Database:
                 if not self.site.isValidCategory(category):
                     print 'category name "%s" in "%s" is unavailable' % (category, util.getRelativePath(article.source))
                     continue
-                slug = util.encodeURIComponent(category)
+                slug = util.generateSlug(category)
                 if slug in categories.keys():
                     categories[slug].addArticle(article)
                 else:
@@ -112,6 +101,7 @@ class Gude(Application):
     ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
 
     def __init__(self):
+
         if not os.path.exists(DEFAULT_CONFIG_FILE):
             util.die('config file [%s] is non-existent.' % DEFAULT_CONFIG_FILE)
 
@@ -207,18 +197,29 @@ class Gude(Application):
     def serve(self, args):
         server.run(args.port)
 
+    # 生成地址
     def generateUrl(self, *parts, **kwargs):
-        subs = [self.config['subdirectory']]
-        subs.extend(parts)
-        domain = self.config['domain'].strip('/')
-        url = re.sub('//+', '/', '/'.join(str(s) for s in subs if s)).strip('/')
-        return "%s/%s.%s" % (domain, url, self.exportFileExtension)
+        isdir = kwargs.get('isdir', False)   # 目录地址
+        hasext = kwargs.get('hasext', False) # 已经有后缀
+        is_url_quoted = kwargs.get('quoted', False) # 地址已转换成url组件
+        site_url = self.siteUrl;
+        sub_url = re.sub('//+', '/', '/'.join(unicode(s) for s in parts if s)).strip('/')
+        if not is_url_quoted:
+            sub_url = util.urlQuote(sub_url)
+        if isdir:
+            return '%s%s/' % (site_url, sub_url)
+        if hasext:
+            return '%s%s' % (site_url, sub_url)
+        return "%s%s.%s" % (site_url, sub_url, self.exportFileExtension)
 
+    # 生成发布文件路径
     def generateDeployFilePath(self, *parts, **kwargs):
+        hasext = kwargs.get('hasext', False) # 已经有后缀
         deploy_file_path = self.deployPath
         for s in parts:
-            s = util.encodeURIComponent(s)
             deploy_file_path = os.path.join(deploy_file_path, s)
+        if hasext:
+            return deploy_file_path
         return '%s.%s' % (deploy_file_path, self.exportFileExtension)
 
     def getPathInSite(self, filename):
@@ -254,6 +255,11 @@ class Gude(Application):
     def exportFileExtension(self):
         return self.config.get('extension', 'html')
 
+    @property
+    def exportFeedFile(self):
+        return self.config.get('feed', 'feed.rss')
+        pass
+
     # 每页文章数
     @property
     def numPerPage(self):
@@ -288,6 +294,8 @@ class Gude(Application):
     def siteTagline(self):
         return self.config.get('tagline', '')
         pass
+
+
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):

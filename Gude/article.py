@@ -123,49 +123,43 @@ class Article(object):
         return True
 
     def export(self):
-        export_dir = os.path.dirname(self.exportFilePath)
-        if export_dir and not os.path.isdir(export_dir):
-            os.makedirs(export_dir)
+        util.tryMakeDirForFile(self.exportFilePath)
     
         data = {'site': self.site, 'article': self}
 
         template = self.site.getTemplate(self.layout)
         html = template.render_unicode(**data).strip()
-        with open(self.exportFilePath, 'w') as f:
-            f.write(html.encode('utf-8'))
+        with open(self.exportFilePath, 'w') as fp:
+            fp.write(html.encode('utf-8'))
         print "  %s \n      => %s" % ( self.site.getRelativePath(self.source), 
-                               self.site.getRelativePath(self.exportFilePath) )
+                                       self.site.getRelativePath(self.exportFilePath) )
 
     def isMarkdown(self):
-        dirname, basename, extension = self.sourceFilePathSplited;
+        extension = os.path.splitext(self.source)[1][1:]
         return extension.find('md') == 0 or extension.find('markdown') == 0
 
     # 永久链接  
     @property
     def permalink(self):
-        dirname, basename, extension = self.sourceFilePathSplited;
-        return self.site.generateUrl(dirname, 'article', basename)
-
-    @property
-    def sourceFilePathSplited(self):
-        dirname, basename = os.path.split(self.source)
-        return ( dirname[len( self.site.articlePath )+1:],
-                os.path.splitext(basename)[0],
-                os.path.splitext(basename)[1][1:]
-            )
+        return self.site.generateUrl(self.exportDir, self.exportBasename)
 
     # 导出文件的绝对路径
     @property
     def exportFilePath(self):
-        dirname, basename, extension = self.sourceFilePathSplited;
-        return self.site.generateDeployFilePath(dirname, 'article', basename)
+        return self.site.generateDeployFilePath(self.exportDir, self.exportBasename)
 
-    def output():
-        return 'dsf'
-        pass
+    @property
+    def exportDir(self):
+        #! self.source 可能包括子文件夹
+        dirname, basename = os.path.split(self.source)
+        dirname = dirname[len( self.site.articlePath )+1:].strip(' /')
+        return os.path.join('article', dirname)
+
+    @property
+    def exportBasename(self):
+        return os.path.splitext(os.path.split(self.source)[1])[0]
 
     def getFeedItem(self):
-
         return RSS2Gen.RSSItem(
             title = self.title, 
             link = self.permalink, 
@@ -208,6 +202,7 @@ class ArticleBundle(object):
     def __init__(self, site):
         self.site = site
         self.articles = []
+        self.totalPageNum = 1
 
     def addArticle(self, article):
         if not isinstance (article, Article):
@@ -224,22 +219,23 @@ class ArticleBundle(object):
 
         first_page_name, other_page_name = self.exportBasename
         pagenav = PageNav(self.articles, self.numPerPage, first_page_name, other_page_name)
-        total_page = pagenav.getPageCount()
-        for i in range(1, total_page+1):
+        self.totalPageNum  = pagenav.getPageCount()
+
+        for i in range(1, self.totalPageNum +1):
 
             articles, deploy_file_name = pagenav.getDataByPageNum(i)
             export_file_path = self.site.generateDeployFilePath(self.exportDir, deploy_file_name)
 
             # 检查输出目录
-            if not os.path.isdir( os.path.dirname(export_file_path) ):
-                os.makedirs(os.path.dirname(export_file_path))
+            util.tryMakeDirForFile(export_file_path)
 
-            data = {'site': self.site, 'articles': articles, 'pagenav': {'cur_page': i, 'total_page': total_page}}
+            data = {'site': self.site, 'articles': articles, 'pagenav': {'cur_page': i, 'total_page': self.totalPageNum }}
             html = template.render_unicode(**data).strip()
             with open(export_file_path, 'w') as f:
                 f.write(html.encode('utf-8'))
 
     def testPrint(self):
+        return
         for a in self.articles:
             print '   ', util.getRelativePath(a.source)
 
@@ -257,7 +253,15 @@ class ArticleBundle(object):
 
     @property
     def permalink(self):
-        return self.site.siteUrl;
+        return self.site.generateUrl(self.exportDir, isdir=True)
+
+    @property
+    def pagePermalink(self, page_num):
+        assert 0 < page_num <= self.totalPageNum, 'page number must in 1 - %d' % self.totalPageNum
+        first, other = self.exportBasename;
+        if page_num == 1:
+            return self.site.generateUrl(self.exportDir, first)
+        return self.site.generateUrl(self.exportDir, other % page_num)
 
     @property
     def templateName(self):
@@ -297,10 +301,6 @@ class Archive(ArticleBundle):
         return self.site.lookup.get_template(util.tplFile('archive'))
 
     @property
-    def permalink(self):
-        return self.site.generateUrl(self.exportDir)
-
-    @property
     def templateName(self):
         return 'archive'
 
@@ -330,10 +330,9 @@ class Category(ArticleBundle):
     def __init__(self, site, category):
         super(Category, self).__init__(site)
         self.category_name = category
-        self.category_slug = util.encodeURIComponent(category)
 
     def testPrint(self):
-        print 'Category: %s %s %d' % (self.category_name, self.category_slug, self.count)
+        print 'Category: %s %d %s' % (self.category_name, self.count, self.permalink)
         super(Category, self).testPrint()
 
     @property
@@ -341,12 +340,8 @@ class Category(ArticleBundle):
         return 'category'
 
     @property
-    def permalink(self):
-        return self.site.generateUrl(self.exportDir, self.category_slug)
-
-    @property
     def exportDir(self):
-        return 'category/%s' % self.category_slug
+        return 'category/%s' % self.category_name
 
 class Tag(ArticleBundle):
     """标签 
@@ -355,10 +350,9 @@ class Tag(ArticleBundle):
     def __init__(self, site, tag):
         super(Tag, self).__init__(site)
         self.tag_name = tag
-        self.tag_slug = util.encodeURIComponent(tag)
 
     def testPrint(self):
-        print 'Tag: %s %s %d' % (self.tag_name, self.tag_slug, self.count)
+        print 'Tag: %s %d %s' % (self.tag_name, self.count, self.permalink)
         super(Tag, self).testPrint()
 
     @property
@@ -366,12 +360,8 @@ class Tag(ArticleBundle):
         return 'tag'
 
     @property
-    def permalink(self):
-        return self.site.generateUrl(self.exportDir, self.tag_slug)
-
-    @property
     def exportDir(self):
-        return 'tag/%s' % self.tag_slug 
+        return 'tag/%s' % self.tag_name
 
 class Feed(ArticleBundle):
     """ Feed的输出 """
@@ -399,5 +389,7 @@ class Feed(ArticleBundle):
             generator = util.self()
             )
 
-        with open(os.path.join(self.site.deployPath, 'feed.rss'), 'w') as fp:
+        # 后缀名特殊 不能用self.site.generateDeployFilePath()
+        filename = os.path.join(self.site.deployPath, self.site.exportFeedFile)
+        with open(filename, 'w') as fp:
                 feed.write_xml(fp, 'utf-8')

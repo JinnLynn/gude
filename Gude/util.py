@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import sys, re, urllib
+import sys, os, re, urllib
 import setting
 from setting import DEV_MODE
 from setting import SITE_PATH
@@ -8,10 +8,26 @@ from setting import SITE_PATH
 stdKey = lambda s: re.sub('[- ]+', '_', s.lower())
 # 模板
 tplFile = lambda s: '%s.mako' % s
+# 创建slug 使用urlQuote
+generateSlug = lambda s: urlQuote(s)
+
+
+# 如果文件夹不存在则创建
+def tryMakeDir(dirpath):
+    if not os.path.isdir( dirpath ):
+        os.makedirs( dirpath ) 
+# 如果文件所在的文件夹不存在则创建
+def tryMakeDirForFile(filepath):
+    if not os.path.isdir( os.path.dirname( filepath ) ):
+        os.makedirs(os.path.dirname( filepath )) 
+                
 
 # 编码为网址资源组件
-encodeURIComponent = lambda s: urllib.quote( re.sub('[- ]+', '-', s.lower()).encode('utf-8') )
-
+def urlQuote(s):
+    try:
+        return urllib.quote( re.sub('[- ]+', '-', s.lower() ))
+    except Exception, e:
+        return urllib.quote( re.sub('[- ]+', '-', s.lower() ).encode('utf-8'))
 
 def die(msg):
     sys.stderr.write(msg + '\n')
