@@ -20,9 +20,6 @@ category : 分类
 
 source   : 原始文件名
 content  : 内容
-dirname  : 相对目录名称
-basename : 文件名称 无后缀
-extension : 后缀
 """
 DEFAULT_ARTICLE_CONFIG = {
     'layout': 'post',
@@ -89,8 +86,8 @@ class Article(object):
         self.content = ''
         self.summary = ''
         for line in lines[index:]:
-            if line.strip(' \t') == '<!--more-->':
-                self.summary = self.contert
+            if line.strip(' \t').find('<!--more-->') == 0:
+                self.summary = self.content
                 line = '<span id="more-%s"></span>' % self.unique
             self.content += line
 
@@ -123,7 +120,6 @@ class Article(object):
 
     # 检查文章分类的有效性 只有在网站配置'category'中存在了才可用
     def checkCategoryAvailable(self):
-        print self.category
         cate = []
         for c in self.category:
             category = self.site.convertToConfigedCategory(c)
@@ -135,8 +131,6 @@ class Article(object):
             else:
                 print "unavailable category: '%s' IN %s" % (c, self.site.getRelativePath(self.source))
         self.category = cate
-        print self.category
-        print '------------------'
 
     def export(self):
         util.tryMakeDirForFile(self.exportFilePath)
@@ -158,6 +152,11 @@ class Article(object):
     @property
     def permalink(self):
         return self.site.generateUrl(self.exportDir, self.sourceBasename)
+
+    # 跳转到 more 的链接
+    @property
+    def morePermalink(self):
+        return '%s#%s' % (self.permalink, self.unique)
 
     # 导出文件的绝对路径
     @property
