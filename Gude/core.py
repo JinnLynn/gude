@@ -251,7 +251,9 @@ class Gude(Application):
         return self.config.get('tagline', '')
         pass
 
-
+    @property
+    def siteCategories(self):
+        return self.config.get('category', [])
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):
@@ -268,8 +270,11 @@ class Gude(Application):
         assert abspath.find(SITE_PATH) == 0, 'path error. %s' % abspath
         return abspath[len(SITE_PATH)+1:]
 
-    def isValidCategory(self, category):
-        return category.lower() in map(lambda c: c.lower(), self.config['category'])
+    def convertToConfigedCategory(self, category):
+        for cate in self.siteCategories:
+            if category.lower() == cate.lower():
+                return cate
+        return None
 
 if __name__ == '__main__':
     Gude().run()

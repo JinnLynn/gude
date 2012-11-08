@@ -79,8 +79,11 @@ class Article(object):
         self.metadata   = config.get('metadata', {})
 
         # 检查date
-        if not self.isDateAvailable() or not self.isCategoryAvailable():
+        if not self.isDateAvailable():
             return False
+
+        # 检查分类
+        self.checkCategoryAvailable()
         
         # 获取内容
         self.content = ''
@@ -118,9 +121,22 @@ class Article(object):
             return False
         return True
 
-    # 文章分类是否有效
-    def isCategoryAvailable(self):
-        return True
+    # 检查文章分类的有效性 只有在网站配置'category'中存在了才可用
+    def checkCategoryAvailable(self):
+        print self.category
+        cate = []
+        for c in self.category:
+            category = self.site.convertToConfigedCategory(c)
+            if category:
+                if category not in cate:
+                    cate.append(category)
+                else:
+                    print "category: '%s' already exists IN '%s'" % (c, self.site.getRelativePath(self.source))
+            else:
+                print "unavailable category: '%s' IN %s" % (c, self.site.getRelativePath(self.source))
+        self.category = cate
+        print self.category
+        print '------------------'
 
     def export(self):
         util.tryMakeDirForFile(self.exportFilePath)
