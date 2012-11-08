@@ -412,3 +412,88 @@ class Feed(ArticleBundle):
         filename = os.path.join(self.site.deployPath, self.site.exportFeedFile)
         with open(filename, 'w') as fp:
                 feed.write_xml(fp, 'utf-8')
+
+class Tags(ArticleBundle):
+    """标签"""
+    def __init__(self, site, articles):
+        self.site = site
+        self.articles = articles
+        self.tags = self.fetchAllTags()
+
+    def fetchAllTags(self):
+        tags = {}
+        for article in self.articles:
+            for tag in article.tag:
+                slug = util.generateSlug(tag)
+                if slug in tags.keys():
+                    tags[slug].addArticle(article)
+                else:
+                    tags[slug] = Tag(self.site, tag)
+                    tags[slug].addArticle(article)
+        # 按文章数排序
+        return sorted(tags.values(), cmp = lambda a, b: a.count > b.count)
+
+    def export(self):
+        self.printSelf()
+        
+        if self.count == 0:
+            return
+
+        template = self.site.getTemplate('tags')
+        deploy_file = self.site.generateDeployFilePath('tags')
+        util.tryMakeDirForFile(deploy_file)
+        data = {'site': self.site, 'tags': self.tags}
+        html = template.render_unicode(**data).strip()
+        with open(deploy_file, 'w') as f:
+            f.write(html.encode('utf-8'))
+        print '   => %s' % self.site.getRelativePath(deploy_file)
+        # 输出标签单页
+        map(lambda t: t.export(), self.tags)
+
+    def printSelf(self):
+        print 'Tags: %s' % self.permalink
+
+    @property
+    def count(self):
+        return len(self.tags)
+
+    @property
+    def exportDir(self):
+        return 'tags'
+
+class Categories(ArticleBundle):
+    """分类"""
+    def __init__(self, site, articles):
+        super(Categories, self).__init__(site)
+        self.articles = articles
+        self.categories = self.fetchAllCategories()
+
+
+    def fetchAllCategories(self):
+        categories = {}
+        for article in self.articles:
+            for category in article.category:
+                # 分类是否满足条件在 文章对象中处理
+                slug = util.generateSlug(category)
+                if slug in categories.keys():
+                    categories[slug].addArticle(article)
+                else:
+                    categories[slug] = Category(self.site, category)
+                    categories[slug].addArticle(article)
+        # 按文章数排序
+        return sorted(categories.values(), cmp = lambda a, b: a.count > b.count)
+
+    def export(self):
+        self.printSelf()
+        if not self.count:
+            return
+        map(lambda c: c.export(), self.categories)
+
+    def printSelf(self):
+        print 'Categories: %s' % self.permalink
+    
+    @property
+    def count(self):
+        return len(self.categories)
+
+        

@@ -25,67 +25,25 @@ class Database:
         self.archive.addArticle(article)
 
     def export(self):
-        # 输出文章列表页 包括首页
+        # 输出文章列表页
         self.archive.export()
-
-        # 输出标签
-        self.exportTags()
-
-        categories = self.fetchCategories()
-        map(lambda c: c.export(), categories)
 
         # 输出首页
         home = Home(self.site)
         home.importArticleFromArchive(self.archive)
         home.export()
 
+        # 输出分类
+        categories = Categories(self.site, self.archive.articles)
+        categories.export()
+
+        # 输出标签
+        tags = Tags(self.site, self.archive.articles)
+        tags.export()
+
         # 输出Feed
         feed = Feed(self.site, self.archive)
         feed.export()
-
-    """ 输出标签页 """
-    def exportTags(self):
-        tags = self.fetchTags()
-        # 按标记文章数排序
-        tags = sorted(tags, cmp = lambda a, b: a.count > b.count)
-
-        data = {'site': self.site, 'tags': tags}
-
-        util.tryMakeDirForFile(os.path.join(self.site.deployPath, 'tags/index.html'))
-
-        template = self.site.getTemplate('tags')
-        html = template.render_unicode(**data).strip()
-        with open(os.path.join(self.site.deployPath, 'tags/index.html'), 'w') as f:
-            f.write(html.encode('utf-8'))
-
-        map(lambda t: t.export(), tags)        
-
-    def fetchTags(self):
-        tags = {}
-        for article in self.archive.articles:
-            for tag in article.tag:
-                slug = util.generateSlug(tag)
-                if slug in tags.keys():
-                    tags[slug].addArticle(article)
-                else:
-                    tags[slug] = Tag(self.site, tag)
-                    tags[slug].addArticle(article)
-        return tags.values()
-
-    def fetchCategories(self):
-        categories = {}
-        for article in self.archive.articles:
-            for category in article.category:
-                if not self.site.isValidCategory(category):
-                    print 'category name "%s" in "%s" is unavailable' % (category, util.getRelativePath(article.source))
-                    continue
-                slug = util.generateSlug(category)
-                if slug in categories.keys():
-                    categories[slug].addArticle(article)
-                else:
-                    categories[slug] = Category(self.site, category)
-                    categories[slug].addArticle(article)
-        return categories.values();
 
     def testPrint(self):
         print 'db:'
@@ -237,7 +195,6 @@ class Gude(Application):
 
     def getTemplate(self, name):
         return self.lookup.get_template(util.tplFile(str(name)))
-        pass
 
     # 静态文件路径
     @property
