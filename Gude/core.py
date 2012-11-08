@@ -64,9 +64,26 @@ class Site:
         feed = Feed(self, self.articles)
         feed.export()
 
+        # 输出404
+        self.export404()
+
     def exportArticles(self):
         print 'Article:'
         map(lambda a: a.export(), self.articles)
+
+    def export404(self):
+        print '404:'
+        template = self.getTemplate('404')
+        deploy_file = self.generateDeployFilePath('404.html', assign=True)
+
+        util.tryMakeDirForFile(deploy_file)
+    
+        data = {'site': self}
+        print '404: %s' % self.generateUrl('404.html', isfile=True)
+        html = template.render_unicode(**data).strip()
+        with open(deploy_file, 'w') as fp:
+            fp.write(html.encode('utf-8'))
+        print "   => %s" % self.getRelativePath(deploy_file)
 
     def testPrint(self):
         print 'db:'
