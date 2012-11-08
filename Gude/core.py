@@ -15,53 +15,8 @@ from setting import SITE_PATH
 from setting import ARTICLE_EXTENSION
 from setting import ARTICLE_EXCLUDE_DIR
 
-class Database:
-    def __init__(self, site):
-        self.site = site
-        self.archive = Archive(self.site)
-        
-
-    def add(self, article):
-        self.archive.addArticle(article)
-
-    def export(self):
-        # 输出文章列表页
-        self.archive.export()
-
-        # 输出首页
-        home = Home(self.site)
-        home.importArticleFromArchive(self.archive)
-        home.export()
-
-        # 输出分类
-        categories = Categories(self.site, self.archive.articles)
-        categories.export()
-
-        # 输出标签
-        tags = Tags(self.site, self.archive.articles)
-        tags.export()
-
-        # 输出Feed
-        feed = Feed(self.site, self.archive)
-        feed.export()
-
-    def testPrint(self):
-        print 'db:'
-        print '    atricles:'
-        for a in self.articles.articles:
-            print('   ' + a.source)
-            pass
-        #map(lambda a: print('   ' + a.source), self.articles.articles)
-
-
-class Gude(Application):
-    ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
-
+class Site:
     def __init__(self):
-
-        if not os.path.exists(DEFAULT_CONFIG_FILE):
-            util.die('config file [%s] is non-existent.' % DEFAULT_CONFIG_FILE)
-
         # 配置
         self.config = DEFAULT_CONFIG
 
@@ -75,84 +30,52 @@ class Gude(Application):
         template_dir = os.path.join(SITE_PATH, 'layout')
         self.lookup = TemplateLookup(directories=[template_dir], input_encoding='utf-8')
         
-        # 数据库
-        self.db = Database(self)
+        self.articles = []
+        
 
-    def run(self, args=None):
-        super(Gude, self).run(args)
+    def add(self, article):
+        if not isinstance (article, Article):
+            raise ValueError, 'type of article is not Article'
+        elif article in self.articles:
+            raise ValueError, 'article is already exists'
+        self.articles.append(article)
 
-    @command(description='Gude - a simple python static website generator', 
-        epilog='Use %(prog)s {command} -h to get help on individual commands')
-    @version('-v', version='%(prog)s ' + setting.VERSION)
-    def main(self, args):
-        pass
+    def export(self):
+        # 输出文章
+        self.exportArticles()
 
-    @subcommand('init', help='Create a new site.')
-    @true('-f', '--force', default=False, dest='overwrite', help='Overwrite the current site if it exists')
-    def init(self, args):
-        if os.listdir(SITE_PATH) and (not util.isOptExists('f')):
-            util.die(u" %s is not empty" % SITE_PATH)
-        # 强制 删除旧的文件
-        if args.overwrite:
-            for exist_file in os.listdir(SITE_PATH):
-                abs_path = os.path.join(SITE_PATH, exist_file)
-                shutil.rmtree(abs_path) if os.path.isdir(abs_path) else os.remove(abs_path)
+        # 输出首页
+        home = Home(self, self.articles)
+        home.export()
 
-        # 拷贝文件
-        for src_file in os.listdir(self.staticFilePath):
-            src = os.path.join(self.staticFilePath, src_file)
-            dst = os.path.join(SITE_PATH, src_file)
-            print src, dst
-            shutil.copytree(src, dst) if os.path.isdir(src) else shutil.copy(src, dst)
+        # 输出存档
+        archive = Archive(self, self.articles)
+        archive.export()
 
-    @subcommand('build', help='build a new site.')
-    @version('-f', default=False, dest='overwrite')
-    def build(self, args):
-        # 删除发布目录
-        #+ 添加判断
-        if os.path.isdir(self.deployPath):
-            shutil.rmtree(self.deployPath)
-        os.makedirs(self.deployPath)
+        # 输出分类
+        categories = Categories(self, self.articles)
+        categories.export()
 
-        # 建立所有文章的数据库
-        for files in os.walk(self.articlePath):
-            # 忽略的文件夹 仅关心顶层目录
-            i, j = os.path.split(files[0])
-            if i == self.articlePath and j in ARTICLE_EXCLUDE_DIR:
-                util.log('exclude dir: %s' % files[0])
-                continue
+        # 输出标签
+        tags = Tags(self, self.articles)
+        tags.export()
 
-            for fname in files[2]:
-                fname = os.path.join(files[0], fname)
-                if not self.isValidArticleFile(fname):
-                    util.log('invalid article: %s' % fname)
-                    continue
-                article = Article(self, fname)
-                self.db.add(article) if article.parse() else util.log('invalid article: %s' % fname)  
-        # 导出
-        self.db.export()
+        # 输出Feed
+        feed = Feed(self, self.articles)
+        feed.export()
 
-    @subcommand('add', help='add new article')
-    @store('-n', '-name', default='', dest='filename', help='filename')
-    @true('--html', default=False, dest='is_html', help='HTML type')
-    def add(self, args):
-        if not args.filename:
-            print 'fail'
-            return
-        extension = '.md'
-        if args.is_html:
-            extension = '.html'
-        filename = args.filename + extension
-        #+ 检查文件是否存在 文件名相同即有问题 后缀不重要
-        header = setting.ARTICLE_TEMPLATE % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        article_filename = os.path.join(self.articlePath, filename)
-        with codecs.open(article_filename, 'w', encoding='utf-8') as fp:
-            fp.write(header)
+    def exportArticles(self):
+        print 'Article:'
+        map(lambda a: a.export(), self.articles)
 
-    @subcommand('serve', help='Serve the website')
-    @store('-p', '--port', type=int, default=8910, dest='port', help='The port where the website must be served from.')
-    def serve(self, args):
-        server.run(args.port)
+    def testPrint(self):
+        print 'db:'
+        print '    atricles:'
+        for a in self.articles.articles:
+            print('   ' + a.source)
+            pass
+        #map(lambda a: print('   ' + a.source), self.articles.articles)
+
 
     # 生成地址 默认: 文件夹
     def generateUrl(self, *parts, **kwargs):
@@ -275,6 +198,94 @@ class Gude(Application):
             if category.lower() == cate.lower():
                 return cate
         return None
+
+
+class Gude(Application):
+    ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
+
+    def __init__(self):
+
+        if not os.path.exists(DEFAULT_CONFIG_FILE):
+            util.die('config file [%s] is non-existent.' % DEFAULT_CONFIG_FILE)
+
+        self.site = Site()
+
+    def run(self, args=None):
+        super(Gude, self).run(args)
+
+    @command(description='Gude - a simple python static website generator', 
+        epilog='Use %(prog)s {command} -h to get help on individual commands')
+    @version('-v', version='%(prog)s ' + setting.VERSION)
+    def main(self, args):
+        pass
+
+    @subcommand('init', help='Create a new site.')
+    @true('-f', '--force', default=False, dest='overwrite', help='Overwrite the current site if it exists')
+    def init(self, args):
+        if os.listdir(SITE_PATH) and (not util.isOptExists('f')):
+            util.die(u" %s is not empty" % SITE_PATH)
+        # 强制 删除旧的文件
+        if args.overwrite:
+            for exist_file in os.listdir(SITE_PATH):
+                abs_path = os.path.join(SITE_PATH, exist_file)
+                shutil.rmtree(abs_path) if os.path.isdir(abs_path) else os.remove(abs_path)
+
+        # 拷贝文件
+        for src_file in os.listdir(self.staticFilePath):
+            src = os.path.join(self.staticFilePath, src_file)
+            dst = os.path.join(SITE_PATH, src_file)
+            print src, dst
+            shutil.copytree(src, dst) if os.path.isdir(src) else shutil.copy(src, dst)
+
+    @subcommand('build', help='build a new site.')
+    @version('-f', default=False, dest='overwrite')
+    def build(self, args):
+        # 删除发布目录
+        #+ 添加判断
+        if os.path.isdir(self.site.deployPath):
+            shutil.rmtree(self.site.deployPath)
+        os.makedirs(self.site.deployPath)
+
+        # 建立所有文章的数据库
+        for files in os.walk(self.site.articlePath):
+            # 忽略的文件夹 仅关心顶层目录
+            i, j = os.path.split(files[0])
+            if i == self.site.articlePath and j in ARTICLE_EXCLUDE_DIR:
+                util.log('exclude dir: %s' % files[0])
+                continue
+
+            for fname in files[2]:
+                fname = os.path.join(files[0], fname)
+                if not self.site.isValidArticleFile(fname):
+                    util.log('invalid article: %s' % fname)
+                    continue
+                article = Article(self.site, fname)
+                self.site.add(article) if article.parse() else util.log('invalid article: %s' % fname)  
+        # 导出
+        self.site.export()
+
+    @subcommand('add', help='add new article')
+    @store('-n', '-name', default='', dest='filename', help='filename')
+    @true('--html', default=False, dest='is_html', help='HTML type')
+    def add(self, args):
+        if not args.filename:
+            print 'fail'
+            return
+        extension = '.md'
+        if args.is_html:
+            extension = '.html'
+        filename = args.filename + extension
+        #+ 检查文件是否存在 文件名相同即有问题 后缀不重要
+        header = setting.ARTICLE_TEMPLATE % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        article_filename = os.path.join(self.articlePath, filename)
+        with codecs.open(article_filename, 'w', encoding='utf-8') as fp:
+            fp.write(header)
+
+    @subcommand('serve', help='Serve the website')
+    @store('-p', '--port', type=int, default=8910, dest='port', help='The port where the website must be served from.')
+    def serve(self, args):
+        server.run(args.port)
+
 
 if __name__ == '__main__':
     Gude().run()

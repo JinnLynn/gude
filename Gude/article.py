@@ -141,7 +141,7 @@ class Article(object):
         html = template.render_unicode(**data).strip()
         with open(self.exportFilePath, 'w') as fp:
             fp.write(html.encode('utf-8'))
-        print "  %s \n      => %s" % ( self.site.getRelativePath(self.source), 
+        print "   %s \n      => %s" % ( self.site.getRelativePath(self.source), 
                                        self.site.getRelativePath(self.exportFilePath) )
 
     def isMarkdown(self):
@@ -317,15 +317,9 @@ class ArticleBundle(object):
 
 class Archive(ArticleBundle):
     """ 存档 存档页 文章单页的输出 """
-    def __init__(self, site):
+    def __init__(self, site, articles):
         super(Archive, self).__init__(site)
-
-    def export(self):
-        # 输出文章单页
-        print 'article export:'
-        map(lambda a: a.export(), self.articles)
-        # 输出存档页
-        super(Archive, self).export()
+        self.articles = articles
 
     def printSelf(self):
         print 'Archive:'
@@ -347,12 +341,9 @@ class Archive(ArticleBundle):
 
 class Home(ArticleBundle):
     """ 首页的输出 """
-    def __init__(self, site):
+    def __init__(self, site, articles):
         super(Home, self).__init__(site)
-
-    def importArticleFromArchive(self, archive):
-        assert isinstance(archive, Archive)
-        self.articles = archive.articles
+        self.articles = articles
 
     def printSelf(self):
         print 'Home: %s' % self.permalink
@@ -399,9 +390,9 @@ class Tag(ArticleBundle):
 
 class Feed(ArticleBundle):
     """ Feed的输出 """
-    def __init__(self, site, archive):
+    def __init__(self, site, articles):
         super(Feed, self).__init__(site)
-        self.articles = archive.articles
+        self.articles = articles
 
     # 忽略输出方法
     def export(self):
