@@ -67,6 +67,9 @@ class Site:
         # 输出404
         self.export404()
 
+        # 拷贝文件
+        self.copyFiles()
+
     def exportArticles(self):
         print 'Article:'
         map(lambda a: a.export(), self.articles)
@@ -90,6 +93,15 @@ class Site:
         with open(export_file, 'w') as fp:
             fp.write(html.encode('utf-8'))
         print "    => %s" % self.getRelativePath(export_file)
+
+    def copyFiles(self):
+        print 
+        print 'Copy Files:'
+
+        assets_path = self.generateDeployFilePath('assets', assign=True)
+        print '  %s\n    => %s' % (self.getRelativePath(self.assetsPath), self.getRelativePath(assets_path))
+        shutil.copytree(self.assetsPath, assets_path)
+        pass
 
     def testPrint(self):
         print 'db:'
@@ -156,6 +168,11 @@ class Site:
     @property
     def deployPath(self):
         return os.path.join(SITE_PATH, 'deploy')
+
+    # 资源文件路径
+    @property
+    def assetsPath(self):
+        return os.path.join(SITE_PATH, 'assets')
 
     @property
     def exportFeedFile(self):
