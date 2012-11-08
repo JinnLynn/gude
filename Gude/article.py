@@ -132,17 +132,10 @@ class Article(object):
                 print "unavailable category: '%s' IN %s" % (c, self.site.getRelativePath(self.source))
         self.category = cate
 
-    def export(self):
-        util.tryMakeDirForFile(self.exportFilePath)
-    
+    def export(self):    
+        print '  %s' % self.site.getRelativePath(self.source)
         data = {'site': self.site, 'article': self}
-
-        template = self.site.getTemplate(self.layout)
-        html = template.render_unicode(**data).strip()
-        with open(self.exportFilePath, 'w') as fp:
-            fp.write(html.encode('utf-8'))
-        print "   %s \n      => %s" % ( self.site.getRelativePath(self.source), 
-                                       self.site.getRelativePath(self.exportFilePath) )
+        self.site.exportFile(self.exportFilePath, self.layout, data)
 
     def isMarkdown(self):
         extension = os.path.splitext(self.source)[1][1:]
@@ -233,12 +226,7 @@ class ArticleBundle(object):
 
         if self.count <= 0:
             return
-        template =None
-        try:
-            template = self.site.getTemplate(self.templateName)
-        except Exception, e:
-            assert template, "template '%s' is non-existent" % self.templateName
-        
+
         self.sortByDateDESC()
 
         paged_articles = self.getPagedArticles()
@@ -247,18 +235,11 @@ class ArticleBundle(object):
         for i in range(1, total_page_num + 1):
 
             articles = paged_articles[i - 1]
-            export_file_path = self.site.generateDeployFilePath(self.exportDir, page=i)
+            deploy_file = self.site.generateDeployFilePath(self.exportDir, page=i)
 
             self.curPageNum = i
-
-            # 检查输出目录
-            util.tryMakeDirForFile(export_file_path)
-
             data = {'site': self.site, 'articles': articles}
-            html = template.render_unicode(**data).strip()
-            with open(export_file_path, 'w') as f:
-                f.write(html.encode('utf-8'))
-            print '   => %s' % self.site.getRelativePath(export_file_path)
+            self.site.exportFile(deploy_file, self.templateName, data)
 
     def printSelf(self):
         return
@@ -267,9 +248,6 @@ class ArticleBundle(object):
     def sortByDateDESC(self):
         self.articles = sorted(self.articles, key = lambda a: a.date, reverse = True ) 
         pass
-
-    def getTemplate(self):
-        return None
 
     @property
     def count(self):
@@ -323,9 +301,6 @@ class Archive(ArticleBundle):
 
     def printSelf(self):
         print 'Archive:'
-
-    def getTemplate(self):
-        return self.site.lookup.get_template(util.tplFile('archive'))
 
     @property
     def templateName(self):
@@ -445,14 +420,11 @@ class Tags(ArticleBundle):
         if self.count == 0:
             return
 
-        template = self.site.getTemplate('tags')
-        deploy_file = self.site.generateDeployFilePath('tags')
-        util.tryMakeDirForFile(deploy_file)
         data = {'site': self.site, 'tags': self.tags}
-        html = template.render_unicode(**data).strip()
-        with open(deploy_file, 'w') as f:
-            f.write(html.encode('utf-8'))
-        print '   => %s' % self.site.getRelativePath(deploy_file)
+        deploy_file = self.site.generateDeployFilePath('tags')
+
+        self.site.exportFile(deploy_file, self.templateName, data)
+
         # 输出标签单页
         map(lambda t: t.export(), self.tags)
 
@@ -465,6 +437,10 @@ class Tags(ArticleBundle):
 
     @property
     def exportDir(self):
+        return 'tags'
+
+    @property
+    def templateName(self):
         return 'tags'
 
 class Categories(ArticleBundle):

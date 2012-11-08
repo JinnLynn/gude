@@ -73,17 +73,23 @@ class Site:
 
     def export404(self):
         print '404:'
-        template = self.getTemplate('404')
         deploy_file = self.generateDeployFilePath('404.html', assign=True)
-
-        util.tryMakeDirForFile(deploy_file)
-    
         data = {'site': self}
-        print '404: %s' % self.generateUrl('404.html', isfile=True)
+        self.exportFile(deploy_file, '404', data)
+        
+
+    def exportFile(self, export_file, template_name, data):
+        util.tryMakeDirForFile(export_file)
+        template = None
+        try:
+            template = self.getTemplate(template_name)
+        except Exception, e:
+            pass
+        assert template, "template '%s' is non-existent" % template_name
         html = template.render_unicode(**data).strip()
-        with open(deploy_file, 'w') as fp:
+        with open(export_file, 'w') as fp:
             fp.write(html.encode('utf-8'))
-        print "   => %s" % self.getRelativePath(deploy_file)
+        print "    => %s" % self.getRelativePath(export_file)
 
     def testPrint(self):
         print 'db:'
