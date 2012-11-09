@@ -30,8 +30,8 @@ DEFAULT_CONFIG = {
 # 文章相关配置
 # 生成模板
 ARTICLE_TEMPLATE = """---
-layout:     post
-title:      Untitled
+layout:     %s
+title:      %s
 date:       %s
 category:   []
 tag:        []
@@ -46,3 +46,6 @@ ARTICLE_EXCLUDE_DIR = ['tag', 'tags',  'category', 'archive', 'article',    'ass
 
 # 文章日期支持格式       2001-03-25 13:09:10  2001-03-25 13:10  2001-03-25   03/25/01 13:09:10 03/25/01 13:09:10
 ARTICLE_DATE_FORMAT =['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d',  '%c',              '%x'           ]
+
+ARTICLE_FILENAME_PREFIX_FORMAT = '%Y-%m-%d-'
+ARTICLE_FILENAME_PREFIX_LEN = 11 # 形如 2001-01-02-FILENAME

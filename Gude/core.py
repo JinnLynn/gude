@@ -204,6 +204,11 @@ class Site:
     def siteAuthor(self):
         return self.config.get('author', '')
 
+    # 默认layout
+    @property
+    def defaultLayout(self):
+        return self.config.get('default_layout', 'post')  
+
     @property
     def siteDomain(self):
         return '%s/' % self.config.get('domain', 'http://localhost/').strip(' /')
@@ -306,21 +311,34 @@ class Gude(Application):
             self.startServer(DEFAULT_SERVER_PORT)
 
     @subcommand('add', help='add new article')
-    @store('-n', '-name', default='', dest='filename', help='filename')
-    @true('--html', default=False, dest='is_html', help='HTML type')
+    @store('-t', default='Untitled', dest='title', help='article title')
+    @store('-f', default='', dest='filename', help='article filename, no extension')
+    @store('-d', default='', dest='dirname', help='article directory')
+    @store('-l', default='', dest='layout' )
+    @true('--html', default=False, dest='is_html', help='Use HTML type, default is Markdown')
     def add(self, args):
-        if not args.filename:
-            print 'fail'
+        if not args.filename and not args.title:
+            print 'something error'
             return
-        extension = '.md'
-        if args.is_html:
-            extension = '.html'
-        filename = args.filename + extension
-        #+ 检查文件是否存在 文件名相同即有问题 后缀不重要
-        header = setting.ARTICLE_TEMPLATE % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        article_filename = os.path.join(self.articlePath, filename)
-        with codecs.open(article_filename, 'w', encoding='utf-8') as fp:
+
+        if not args.filename:
+            args.filename = util.standardizePath(args.title)
+        # 检查文件是否存在 文件名相同即有问题 后缀不重要
+        if self.isBasenameExists(args.filename, args.dirname):
+            print 'filename is already exists'
+            return
+        filename = args.filename
+        filename += '.html' if args.is_html else '.md' 
+        if self.site.isArticleFilenameUseDatePrefix:
+            filename = '%s%s' % (datetime.now().strftime(ARTICLE_FILENAME_PREFIX_FORMAT), filename)
+        abspath = os.path.join(self.site.articlePath, args.dirname, filename)
+        if not args.layout:
+            args.layout = self.site.defaultLayout
+        
+        header = ARTICLE_TEMPLATE % (args.layout, args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        with codecs.open(abspath, 'w', encoding='utf-8') as fp:
             fp.write(header)
+        print "article '%s' created." % self.site.getRelativePath(abspath)
 
     @subcommand('serve', help='Serve the website')
     @store('-p', '--port', type=int, default=DEFAULT_SERVER_PORT, dest='port', help='The port where the website must be served from.')
@@ -351,6 +369,18 @@ class Gude(Application):
             print('Server successfully stopped')
             exit()
 
+    def isBasenameExists(self, basename, dirname):
+        abs_dir = os.path.join( self.site.articlePath, dirname)
+        if not os.path.isdir(abs_dir):
+            os.makedirs(abs_dir)
+            print "directory '%s' created." % self.site.getRelativePath(abs_dir)
+        for f in os.listdir(abs_dir):
+            base, extionsion = os.path.splitext(f)
+            if self.site.isArticleFilenameUseDatePrefix:
+                base = base[ARTICLE_FILENAME_PREFIX_LEN:]
+            if base == basename:
+                return True
+        return False
 
 if __name__ == '__main__':
     Gude().run()

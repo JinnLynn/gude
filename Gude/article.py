@@ -66,7 +66,7 @@ class Article(object):
             config_str += line
         config.update( yaml.load(config_str) )
         
-        self.layout     = config.get('layout', 'post')
+        self.layout     = config.get('layout', self.site.defaultLayout)
         self.title      = config.get('title', 'untitled')
         self.author     = config.get('author', self.site.siteAuthor)
         self.date       = config.get('date', None)
@@ -182,7 +182,7 @@ class Article(object):
     def exportBasename(self):
         source_basename = os.path.splitext(os.path.split(self.source)[1])[0]
         if self.site.isArticleFilenameUseDatePrefix:
-            return source_basename[11:]  # 形如 2001-01-02-FILENAME
+            return source_basename[ARTICLE_FILENAME_PREFIX_LEN:]  
         return source_basename
 
     def getFeedItem(self):
