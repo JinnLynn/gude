@@ -20,10 +20,6 @@ category : 分类
 source   : 原始文件名
 content  : 内容
 """
-DEFAULT_ARTICLE_CONFIG = {
-    'layout': 'post',
-    'title' : 'untitied'
-}
 
 """ 单篇文章 """
 class Article(object):
@@ -57,7 +53,6 @@ class Article(object):
         # 解析文章信息
         config_str = ''
         config = {}
-        config.update(DEFAULT_ARTICLE_CONFIG)
         index = 1
         for line in lines[1:]:
             index += 1
@@ -327,7 +322,7 @@ class Archive(ArticleBundle):
 
     @property
     def numPerPage(self):
-        return 50 #+ 需可配置
+        return self.site.numPerPageInArchive;
 
 class Home(ArticleBundle):
     """ 首页的输出 """
@@ -404,8 +399,7 @@ class Feed(ArticleBundle):
             generator = util.self()
             )
 
-        # 后缀名特殊 不能用self.site.generateDeployFilePath()
-        filename = os.path.join(self.site.deployPath, self.site.exportFeedFile)
+        filename = self.site.generateDeployFilePath(self.site.feedFilename, assign=True)
         with open(filename, 'w') as fp:
                 feed.write_xml(fp, 'utf-8')
 

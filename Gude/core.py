@@ -186,18 +186,22 @@ class Site:
         return os.path.join(SITE_PATH, 'assets')
 
     @property
-    def exportFeedFile(self):
-        return self.config.get('feed', 'feed.rss')
-        pass
+    def feedFilename(self):
+        return self.config.get('feed_filename', 'feed.rss')
 
     # 每页文章数
     @property
     def numPerPage(self):
         return self.config['num_per_page']
 
+    # 存档页文章数
+    @property
+    def numPerPageInArchive(self):
+        return self.config.get('num_per_page_in_archive', 50)
+
     # Feed输出的文章数量
     def numInFeed(self):
-        return 10 #+ 可配置
+        return self.config.get('num_in_feed', 10)
 
     # 配置属性
     @property
@@ -223,7 +227,7 @@ class Site:
 
     @property
     def feedUrl(self):
-        return self.siteUrl + self.exportFeedFile.lstrip('/')
+        return self.siteUrl + self.feedFilename.lstrip('/')
         pass
 
     @property
