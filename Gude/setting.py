@@ -43,10 +43,3 @@ ARTICLE_EXTENSION =['md', 'markdown', 'html']
 
 # 忽略的文章目录         标签    所有标签  分类        存档        文章 默认位置   资源       首页分页
 ARTICLE_EXCLUDE_DIR = ['tag', 'tags',  'category', 'archive', 'article',    'assets', 'page' ]
-
-HELP_DOC = """
-    init [-f]
-    add FILENAME
-    build [-c]
-    serve [PORT] 
-"""

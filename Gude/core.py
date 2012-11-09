@@ -6,14 +6,9 @@ import yaml
 from mako.lookup import TemplateLookup
 from commando.commando import *
 
-import util, setting, server
+import util, server
 from article import *
-from setting import DEFAULT_CONFIG_FILE
-from setting import DEFAULT_CONFIG
-from setting import SCRIPT_PATH
-from setting import SITE_PATH
-from setting import ARTICLE_EXTENSION
-from setting import ARTICLE_EXCLUDE_DIR
+from setting import *
 
 class Site:
     def __init__(self):
@@ -142,6 +137,10 @@ class Site:
             return deploy_file_path
         return os.path.join(deploy_file_path, 'index.html')
 
+    def getUrl(self, filepath):
+        filepath.lstrip('/')
+        return self.siteUrl + filepath.lstrip('/')
+
     def getPathInSite(self, filename):
         return os.path.join(SITE_PATH, filename)
 
@@ -206,6 +205,11 @@ class Site:
         return self.siteDomain + subdirectory
 
     @property
+    def feedUrl(self):
+        return self.siteUrl + self.exportFeedFile.lstrip('/')
+        pass
+
+    @property
     def siteTitle(self):
         return self.config.get('title', '')
 
@@ -255,7 +259,7 @@ class Gude(Application):
 
     @command(description='Gude - a simple python static website generator', 
         epilog='Use %(prog)s {command} -h to get help on individual commands')
-    @version('-v', version='%(prog)s ' + setting.VERSION)
+    @version('-v', version='%(prog)s ' + VERSION)
     def main(self, args):
         pass
 
@@ -278,8 +282,36 @@ class Gude(Application):
             shutil.copytree(src, dst) if os.path.isdir(src) else shutil.copy(src, dst)
 
     @subcommand('build', help='build a new site.')
-    @version('-f', default=False, dest='overwrite')
-    def build(self, args):
+    @true('-f', default=False, dest='overwrite')
+    @true('-p', '--preview', default=False, dest='preview', help='start webserver after builded.')
+    def build(self, args):  
+        self.startBuild()
+        if args.preview:
+            self.startServer(DEFAULT_SERVER_PORT)
+
+    @subcommand('add', help='add new article')
+    @store('-n', '-name', default='', dest='filename', help='filename')
+    @true('--html', default=False, dest='is_html', help='HTML type')
+    def add(self, args):
+        if not args.filename:
+            print 'fail'
+            return
+        extension = '.md'
+        if args.is_html:
+            extension = '.html'
+        filename = args.filename + extension
+        #+ 检查文件是否存在 文件名相同即有问题 后缀不重要
+        header = setting.ARTICLE_TEMPLATE % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        article_filename = os.path.join(self.articlePath, filename)
+        with codecs.open(article_filename, 'w', encoding='utf-8') as fp:
+            fp.write(header)
+
+    @subcommand('serve', help='Serve the website')
+    @store('-p', '--port', type=int, default=DEFAULT_SERVER_PORT, dest='port', help='The port where the website must be served from.')
+    def serve(self, args):
+        self.startServer(args.port)
+
+    def startBuild(self):
         # 删除发布目录
         #+ 添加判断
         if os.path.isdir(self.site.deployPath):
@@ -304,27 +336,16 @@ class Gude(Application):
         # 导出
         self.site.export()
 
-    @subcommand('add', help='add new article')
-    @store('-n', '-name', default='', dest='filename', help='filename')
-    @true('--html', default=False, dest='is_html', help='HTML type')
-    def add(self, args):
-        if not args.filename:
-            print 'fail'
-            return
-        extension = '.md'
-        if args.is_html:
-            extension = '.html'
-        filename = args.filename + extension
-        #+ 检查文件是否存在 文件名相同即有问题 后缀不重要
-        header = setting.ARTICLE_TEMPLATE % datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        article_filename = os.path.join(self.articlePath, filename)
-        with codecs.open(article_filename, 'w', encoding='utf-8') as fp:
-            fp.write(header)
-
-    @subcommand('serve', help='Serve the website')
-    @store('-p', '--port', type=int, default=8910, dest='port', help='The port where the website must be served from.')
-    def serve(self, args):
-        server.run(args.port)
+    def startServer(self, port):
+        httpd_ = server.Server(self, port)
+        try:
+            print('Webserver [http://localhost:%d] starting...' % port)
+            httpd_.serve_forever()
+        except KeyboardInterrupt, SystemExit:
+            print('\nReceived shutdown request. Shutting down...')
+            httpd_.shutdown()
+            print('Server successfully stopped')
+            exit()
 
 
 if __name__ == '__main__':
