@@ -3,7 +3,6 @@ import sys, os, codecs, random
 from datetime import datetime
 
 import yaml
-from markdown import markdown
 import PyRSS2Gen.PyRSS2Gen as RSS2Gen 
 
 import util
@@ -96,8 +95,8 @@ class Article(object):
 
         # 处理 html 与 markdown 格式
         if self.isMarkdown():
-            self.content = markdown(self.content)
-            self.summary = markdown(self.summary)
+            self.content = util.markdown(self.content)
+            self.summary = util.markdown(self.summary)
 
         # 摘要
         if not self.summary:

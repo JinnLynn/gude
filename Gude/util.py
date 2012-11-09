@@ -1,5 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 import sys, os, re, urllib
+
+from markdown import markdown as MarkdownConvert
+
 import setting
 from setting import DEV_MODE
 from setting import SITE_PATH
@@ -14,6 +17,8 @@ generateSlug = lambda s: urlQuote(s)
 cleanSlash = lambda s: re.sub('//+', '/', s)
 # 标准话路径： 联系多个'-'转为一个 空格转为 '-'
 standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
+
+markdown = lambda s: MarkdownConvert(s, ['fenced_code']) 
 
 
 # 如果文件夹不存在则创建
