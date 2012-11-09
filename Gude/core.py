@@ -27,13 +27,25 @@ class Site:
         
         self.articles = []
         
+    def indexAllArticles(self):
+        self.articles = []
+        # 建立所有文章的数据库
+        for files in os.walk(self.articlePath):
+            # 忽略的文件夹 仅关心顶层目录
+            i, j = os.path.split(files[0])
+            if i == self.articlePath and j in ARTICLE_EXCLUDE_DIR:
+                util.log('exclude dir: %s' % files[0])
+                continue
 
-    def add(self, article):
-        if not isinstance (article, Article):
-            raise ValueError, 'type of article is not Article'
-        elif article in self.articles:
-            raise ValueError, 'article is already exists'
-        self.articles.append(article)
+            for fname in files[2]:
+                fname = os.path.join(files[0], fname)
+                if not self.isValidArticleFile(fname):
+                    util.log('invalid article: %s' % fname)
+                    continue
+                article = Article(self, fname)
+                if not article.parse():
+                    continue
+                self.articles.append(article)
 
     def export(self):
         # 输出文章
@@ -318,21 +330,9 @@ class Gude(Application):
             shutil.rmtree(self.site.deployPath)
         os.makedirs(self.site.deployPath)
 
-        # 建立所有文章的数据库
-        for files in os.walk(self.site.articlePath):
-            # 忽略的文件夹 仅关心顶层目录
-            i, j = os.path.split(files[0])
-            if i == self.site.articlePath and j in ARTICLE_EXCLUDE_DIR:
-                util.log('exclude dir: %s' % files[0])
-                continue
+        # 索引所有的文章
+        self.site.indexAllArticles()
 
-            for fname in files[2]:
-                fname = os.path.join(files[0], fname)
-                if not self.site.isValidArticleFile(fname):
-                    util.log('invalid article: %s' % fname)
-                    continue
-                article = Article(self.site, fname)
-                self.site.add(article) if article.parse() else util.log('invalid article: %s' % fname)  
         # 导出
         self.site.export()
 

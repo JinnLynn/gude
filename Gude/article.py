@@ -6,7 +6,7 @@ import yaml
 import PyRSS2Gen.PyRSS2Gen as RSS2Gen 
 
 import util
-from setting import SITE_PATH
+from setting import *
 
 """
 文章信息
@@ -75,7 +75,8 @@ class Article(object):
         self.metadata   = config.get('metadata', {})
 
         # 检查date
-        if not self.isDateAvailable():
+        if not self.checkDateAvailable():
+            print "invalid article: date error '%s'" % self.site.getRelativePath(self.source)
             return False
 
         # 检查分类
@@ -90,8 +91,12 @@ class Article(object):
                 line = '<span id="more-%s"></span>' % self.unique
             self.content += line
 
-        self.content.strip()
-        self.summary.strip()
+        self.content.strip('\n\t ')
+        self.summary.strip('\n\t ')
+
+        if len(self.content) == 0:  #? 都不会成立，总是会有一个类似换行的东西 又不是\n WHY?
+            print "invalid article: content empty '%s'" % self.site.getRelativePath(self.source)
+            return False
 
         # 处理 html 与 markdown 格式
         if self.isMarkdown():
@@ -105,14 +110,22 @@ class Article(object):
         return True
 
     # 文章日期是否有效
-    def isDateAvailable(self):
-        if self.date == None: 
+    def checkDateAvailable(self):
+        if isinstance(self.date, datetime):
+            return True
+        if not self.date or not isinstance(self.date, str): 
             return False
-        if not isinstance(self.date, datetime):
-            if not isinstance(self.date, str):
-                return False;
+        date = None
+        for p in ARTICLE_DATE_FORMAT:
+            try:
+                date = datetime.strptime(self.date, p)
+            except Exception, e:
+                continue
             else:
-                self.date = datetime.strptime(self.date, '%Y-%m-%d %H:%M:%S')
+                self.date = date
+                break
+        if not isinstance(self.date, datetime):
+            return False
         if self.date > datetime.now():
             return False
         return True

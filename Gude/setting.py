@@ -43,3 +43,6 @@ ARTICLE_EXTENSION =['md', 'markdown', 'html']
 
 # 忽略的文章目录         标签    所有标签  分类        存档        文章 默认位置   资源       首页分页
 ARTICLE_EXCLUDE_DIR = ['tag', 'tags',  'category', 'archive', 'article',    'assets', 'page' ]
+
+# 文章日期支持格式       2001-03-25 13:09:10  2001-03-25 13:10  2001-03-25   03/25/01 13:09:10 03/25/01 13:09:10
+ARTICLE_DATE_FORMAT =['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d',  '%c',              '%x'           ]
