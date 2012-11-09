@@ -156,7 +156,7 @@ class Article(object):
     # 永久链接  
     @property
     def permalink(self):
-        return self.site.generateUrl(self.exportDir, self.sourceBasename)
+        return self.site.generateUrl(self.exportDir, self.exportBasename)
 
     # 跳转到 more 的链接
     @property
@@ -166,7 +166,7 @@ class Article(object):
     # 导出文件的绝对路径
     @property
     def exportFilePath(self):
-        return self.site.generateDeployFilePath(self.exportDir, self.sourceBasename)
+        return self.site.generateDeployFilePath(self.exportDir, self.exportBasename)
 
     @property
     def exportDir(self):
@@ -179,8 +179,11 @@ class Article(object):
 
     # 源文件的文件名（不包括后缀）
     @property
-    def sourceBasename(self):
-        return os.path.splitext(os.path.split(self.source)[1])[0]
+    def exportBasename(self):
+        source_basename = os.path.splitext(os.path.split(self.source)[1])[0]
+        if self.site.isArticleFilenameUseDatePrefix:
+            return source_basename[11:]  # 形如 2001-01-02-FILENAME
+        return source_basename
 
     def getFeedItem(self):
         return RSS2Gen.RSSItem(

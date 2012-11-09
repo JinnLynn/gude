@@ -234,6 +234,10 @@ class Site:
     def siteCategories(self):
         return self.config.get('category', [])
 
+    @property
+    def isArticleFilenameUseDatePrefix(self):
+        return self.config.get('filename_date_prefix', True)
+
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):
         assert abspath.find(self.articlePath) == 0, 'path error. %s' % abspath
