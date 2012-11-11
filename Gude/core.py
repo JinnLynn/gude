@@ -133,7 +133,8 @@ class Site:
             sub_url += '/page/%d' % page
         if isfile:
             return '%s%s' % (site_url, sub_url)
-        return "%s%s/" % (site_url, sub_url.rstrip('/'))
+        url = "%s%s" % (site_url, sub_url)
+        return url.rstrip('/') + '/'
 
     # 生成发布文件路径 默认: 在文件夹下生成index.html文件
     def generateDeployFilePath(self, *parts, **kwargs):

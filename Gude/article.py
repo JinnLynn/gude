@@ -7,6 +7,7 @@ import PyRSS2Gen.PyRSS2Gen as RSS2Gen
 
 import util
 from setting import *
+import shortcode
 
 """
 文章信息
@@ -93,11 +94,11 @@ class Article(object):
         if len(self.content) == 0:  #? 都不会成立，总是会有一个类似换行的东西 又不是\n WHY?
             print "invalid article: content empty '%s'" % self.site.getRelativePath(self.source)
             return False
-
+        
         # 处理 html 与 markdown 格式
         if self.isMarkdown():
-            self.content = util.markdown(self.content)
-            self.summary = util.markdown(self.summary)
+            self.content = shortcode.parse(self.site, util.markdown(self.content))
+            self.summary = shortcode.parse(self.site, util.markdown(self.summary))
 
         # 摘要
         if not self.summary:
@@ -188,7 +189,12 @@ class Article(object):
     def exportBasename(self):
         source_basename = os.path.splitext(os.path.split(self.source)[1])[0]
         if self.site.isArticleFilenameUseDatePrefix:
-            return source_basename[ARTICLE_FILENAME_PREFIX_LEN:]  
+            try:
+                # 尝试解析日期前缀 如果成功则返回去除日期的 否则为原始
+                datetime.strptime(source_basename[0:ARTICLE_FILENAME_PREFIX_LEN], ARTICLE_FILENAME_PREFIX_FORMAT)
+                return source_basename[ARTICLE_FILENAME_PREFIX_LEN:] 
+            except Exception, e:
+                 pass
         return source_basename
 
     def getFeedItem(self):
@@ -263,7 +269,7 @@ class ArticleBundle(object):
             articles = paged_articles[i - 1]
             deploy_file = self.site.generateDeployFilePath(self.exportDir, page=i)
             self.curPageNum = i
-            data = {'site': self.site, 'articles': articles}
+            data = {'site': self.site, 'articles': articles, 'bundle': self}
             self.site.exportFile(deploy_file, self.templateName, data)
 
     def printSelf(self):
@@ -284,7 +290,9 @@ class ArticleBundle(object):
 
     def getPagePermalink(self, page_num):
         assert 0 < page_num <= self.totalPageNum, 'page number must in 1 - %d' % self.totalPageNum
-        return self.site.generateUrl(self.exportDir, page_num)
+        if page_num == 1:
+            return self.permalink
+        return self.site.generateUrl(self.exportDir, 'page', page_num)
 
     @property
     def templateName(self):
@@ -444,6 +452,8 @@ class Tags(ArticleBundle):
         
         if self.count == 0:
             return
+
+        self.tags = sorted(self.tags, key=lambda a: a.count, reverse = True)
 
         data = {'site': self.site, 'tags': self.tags}
         deploy_file = self.site.generateDeployFilePath('tags')
