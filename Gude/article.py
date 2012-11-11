@@ -32,7 +32,7 @@ class Article(object):
         self.title = 'untitled'
         self.date = None
         self.author = self.site.siteAuthor
-        self.tags = []
+        self.tag = []
         self.category = []
 
         self.content = ''
@@ -74,8 +74,9 @@ class Article(object):
             print "invalid article: date error '%s'" % self.site.getRelativePath(self.source)
             return False
 
-        # 检查分类
-        self.checkCategoryAvailable()
+        # 解析分类
+        self.parseCategory()
+        self.parseTag()
         
         # 获取内容
         self.content = ''
@@ -126,18 +127,28 @@ class Article(object):
         return True
 
     # 检查文章分类的有效性 只有在网站配置'category'中存在了才可用
-    def checkCategoryAvailable(self):
+    # 对象转换为Category对象
+    def parseCategory(self):
         cate = []
         for c in self.category:
             category = self.site.convertToConfigedCategory(c)
             if category:
                 if category not in cate:
-                    cate.append(category)
+                    cate_obj = Category(self.site, category)
+                    cate.append(cate_obj)
                 else:
                     print "category: '%s' already exists IN '%s'" % (c, self.site.getRelativePath(self.source))
             else:
                 print "unavailable category: '%s' IN %s" % (c, self.site.getRelativePath(self.source))
         self.category = cate
+
+    def parseTag(self):
+        tag = []
+        for t in self.tag:
+            if t:
+                tag_obj = Tag(self.site, t)
+                tag.append(tag_obj)
+        self.tag = tag
 
     def export(self):    
         print '  %s' % self.site.getRelativePath(self.source)
@@ -156,7 +167,7 @@ class Article(object):
     # 跳转到 more 的链接
     @property
     def morePermalink(self):
-        return '%s#%s' % (self.permalink, self.unique)
+        return '%s#more-%s' % (self.permalink, self.unique)
 
     # 导出文件的绝对路径
     @property
@@ -189,6 +200,12 @@ class Article(object):
             pubDate = self.date,
             #categories = tags, 
             )
+
+    def outputSummary(self, text='Read more...', format='<p>%s</p>', css='more-link'):
+        if self.summary == self.content:
+            return self.content
+        more_link = '<a href="%s" class="%s">%s</a>' % (self.morePermalink, css, text)
+        return self.summary + '\n' + format % more_link
 
 """ 页面导航信息 """
 class PageNav(object):
@@ -243,10 +260,8 @@ class ArticleBundle(object):
         total_page_num = self.totalPageNum
 
         for i in range(1, total_page_num + 1):
-
             articles = paged_articles[i - 1]
             deploy_file = self.site.generateDeployFilePath(self.exportDir, page=i)
-
             self.curPageNum = i
             data = {'site': self.site, 'articles': articles}
             self.site.exportFile(deploy_file, self.templateName, data)
@@ -297,10 +312,11 @@ class ArticleBundle(object):
         total = self.totalPageNum
         for i in range(0, total):
             start = self.numPerPage * i
+            end = start + self.numPerPage
             if i == total - 1:
                 paged.append( self.articles[start:] )
             else:
-                paged.append( self.articles[start:self.numPerPage] )
+                paged.append( self.articles[start:end] )
         return paged
 
 class Archive(ArticleBundle):
@@ -341,10 +357,10 @@ class Category(ArticleBundle):
     """ 分类 """
     def __init__(self, site, category):
         super(Category, self).__init__(site)
-        self.category_name = category
+        self.name = category
 
     def printSelf(self):
-        print 'Category: %s %d %s' % (self.category_name, self.count, self.permalink)
+        print 'Category: %s %d %s' % (self.name, self.count, self.permalink)
 
     @property
     def templateName(self):
@@ -352,7 +368,7 @@ class Category(ArticleBundle):
 
     @property
     def exportDir(self):
-        return 'category/%s' % self.category_name
+        return 'category/%s' % self.name
 
 class Tag(ArticleBundle):
     """标签 
@@ -360,10 +376,10 @@ class Tag(ArticleBundle):
     """
     def __init__(self, site, tag):
         super(Tag, self).__init__(site)
-        self.tag_name = tag
+        self.name = tag
 
     def printSelf(self):
-        print 'Tag: %s %d %s' % (self.tag_name, self.count, self.permalink)
+        print 'Tag: %s %d %s' % (self.name, self.count, self.permalink)
 
     @property
     def templateName(self):
@@ -371,7 +387,7 @@ class Tag(ArticleBundle):
 
     @property
     def exportDir(self):
-        return 'tag/%s' % self.tag_name
+        return 'tag/%s' % self.name
 
 class Feed(ArticleBundle):
     """ Feed的输出 """
@@ -414,11 +430,11 @@ class Tags(ArticleBundle):
         tags = {}
         for article in self.articles:
             for tag in article.tag:
-                slug = util.generateSlug(tag)
+                slug = util.generateSlug(tag.name)
                 if slug in tags.keys():
                     tags[slug].addArticle(article)
                 else:
-                    tags[slug] = Tag(self.site, tag)
+                    tags[slug] = Tag(self.site, tag.name)
                     tags[slug].addArticle(article)
         # 按文章数排序
         return sorted(tags.values(), cmp = lambda a, b: a.count > b.count)
@@ -464,12 +480,13 @@ class Categories(ArticleBundle):
         categories = {}
         for article in self.articles:
             for category in article.category:
+                category_name = category.name
                 # 分类是否满足条件在 文章对象中处理
-                slug = util.generateSlug(category)
+                slug = util.generateSlug(category_name)
                 if slug in categories.keys():
                     categories[slug].addArticle(article)
                 else:
-                    categories[slug] = Category(self.site, category)
+                    categories[slug] = Category(self.site, category_name)
                     categories[slug].addArticle(article)
         # 按文章数排序
         return sorted(categories.values(), cmp = lambda a, b: a.count > b.count)
