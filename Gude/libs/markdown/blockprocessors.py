@@ -552,4 +552,4 @@ class ParagraphProcessor(BlockProcessor):
             else:
                 # Create a regular paragraph
                 p = util.etree.SubElement(parent, 'p')
-                p.text = block.lstrip()
+                p.text = block#.lstrip()
