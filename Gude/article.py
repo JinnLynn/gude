@@ -215,6 +215,37 @@ class Article(object):
         more_link = '<a href="%s" class="%s">%s</a>' % (self.morePermalink, css, text)
         return self.summary + '\n' + format % more_link
 
+# 被指定生成文件的日志
+class DesignatedArticle(Article):
+    def __init__(self, site, source, designated):
+        super(DesignatedArticle, self).__init__(site, source)
+        self.designated = designated
+
+    def export(self):    
+        print '  %s [Designated]' % self.site.getRelativePath(self.source)
+        data = {'site': self.site, 'article': self}
+        self.site.exportFile(self.exportFilePath, self.layout, data)
+
+    @property
+    def permalink(self):
+        return self.site.generateUrl(self.exportDir, self.exportBasename, isfile=True) 
+
+    @property
+    def exportFilePath(self):
+        return self.site.generateDeployFilePath(self.exportDir, self.exportBasename, assign=True) 
+
+    @property
+    def exportDir(self):
+        dirname, basename = os.path.split(self.designated)
+        return dirname
+
+    # 此时包括后缀
+    @property
+    def exportBasename(self):
+         dirname, basename = os.path.split(self.designated)
+         return basename 
+        
+
 """ 页面导航信息 """
 class PageNav(object):
     def __init__(self, articles, num_per_page, first_page_name, other_page_name = 'page-%d'):

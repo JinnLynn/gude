@@ -42,7 +42,8 @@ class Site:
                 if not self.isValidArticleFile(fname):
                     util.log('invalid article: %s' % fname)
                     continue
-                article = Article(self, fname)
+                designated = self.getDesignated(fname)
+                article = Article(self, fname) if not designated else DesignatedArticle(self, fname, designated)
                 if not article.parse():
                     continue
                 self.articles.append(article)
@@ -268,6 +269,16 @@ class Site:
             if category.lower() == cate.lower():
                 return cate
         return None
+
+    def getDesignated(self, source):
+        designated = self.config.get('designated', {})
+        if not isinstance(designated, dict):
+            return None
+        source = self.getRelativePathWithArticle(source)
+        dist = designated.get(source, None)
+        if dist:
+            print 'designated: %s => %s' % (source, dist)
+        return dist
 
 
 class Gude(Application):
