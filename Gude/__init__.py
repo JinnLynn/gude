@@ -2,9 +2,12 @@
 import sys, os
 from setting import SCRIPT_PATH
 
-def run():
-    # 使用本地第三方库
-    sys.path.insert(0, os.path.join(SCRIPT_PATH, 'libs'))
+# 使用本地第三方库
+sys.path.insert(0, os.path.join(SCRIPT_PATH, 'libs'))
+sys.path.insert(0, os.path.join(SCRIPT_PATH, 'plugins'))
 
-    from core import Gude
+import shortcode
+from core import Gude
+
+def run():
     Gude().run()

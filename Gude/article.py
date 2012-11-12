@@ -68,7 +68,7 @@ class Article(object):
         self.date       = config.get('date', None)
         self.tag        = config.get('tag', [])
         self.category   = config.get('category', [])
-        self.metadata   = config.get('metadata', {})
+        self.custom     = config.get('custom', {})
 
         # 检查date
         if not self.checkDateAvailable():
@@ -206,6 +206,8 @@ class Article(object):
             pubDate = self.date,
             #categories = tags, 
             )
+    def getCustomData(self, key):
+        return self.custom.get(key, '')
 
     def outputSummary(self, text='Read more...', format='<p>%s</p>', css='more-link'):
         if self.summary == self.content:
