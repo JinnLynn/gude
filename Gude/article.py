@@ -7,7 +7,6 @@ import PyRSS2Gen.PyRSS2Gen as RSS2Gen
 
 import util
 from setting import *
-import shortcode
 
 """
 文章信息
@@ -95,14 +94,8 @@ class Article(object):
             print "invalid article: content empty '%s'" % self.site.getRelativePath(self.source)
             return False
         
-        # 处理 html 与 markdown 格式
-        if self.isMarkdown():
-            self.content = shortcode.parse(self.site, util.markdown(self.content))
-            self.summary = shortcode.parse(self.site, util.markdown(self.summary))
-
-        # 摘要
-        if not self.summary:
-            self.summary = self.content
+        self.content = self.contentFilter(self.content)
+        self.summary = self.contentFilter(self.summary) if self.summary else self.content
 
         return True
 
@@ -214,6 +207,18 @@ class Article(object):
             return self.content
         more_link = '<a href="%s" class="%s">%s</a>' % (self.morePermalink, css, text)
         return self.summary + '\n' + format % more_link
+
+    def contentFilter(self, content):
+        if self.isMarkdown:
+            content = util.markdown(content)
+        filters = self.site.contentFilter;
+        for f in filters:
+            try:
+                mod = __import__(f)
+                content = getattr(mod, 'parse')(content, site=self.site, article=self)
+            except:
+                print 'content filter fail: %s' % f
+        return content
 
 # 被指定生成文件的日志
 class DesignatedArticle(Article):

@@ -6,7 +6,6 @@ from setting import SCRIPT_PATH
 sys.path.insert(0, os.path.join(SCRIPT_PATH, 'libs'))
 sys.path.insert(0, os.path.join(SCRIPT_PATH, 'plugins'))
 
-import shortcode
 from core import Gude
 
 def run():

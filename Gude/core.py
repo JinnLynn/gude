@@ -217,15 +217,31 @@ class Site:
 
     @property
     def siteDomain(self):
-        return '%s/' % self.config.get('domain', 'http://localhost/').strip(' /')
+        default = 'http://localhost/'
+        domain = self.config.get('domain', default) if not self.isDevelopMode else self.config.get('dev_domain', default)
+        return '%s/' % domain.strip(' /')
         
     @property
     def siteUrl(self):
-        subdirectory = self.config.get('subdirectory', '').strip('/')
-        subdirectory = re.sub('//+', '/', subdirectory)
-        if subdirectory:
-            subdirectory += '/'
-        return self.siteDomain + subdirectory
+        return self.productionEnvSiteUrl if not self.isDevelopMode else self.developEnvSiteUrl
+
+    # 生产环境下的网站地址
+    @property
+    def productionEnvSiteUrl(self):
+        return self.getSiteUrl_('domain', 'subdirectory')
+
+    @property
+    def developEnvSiteUrl(self):
+        return self.getSiteUrl_('dev_domain', 'dev_subdirectory')
+
+    def getSiteUrl_(self, domain_key, sub_dir_key):
+        domain = self.config.get(domain_key, 'http://localhost/').strip(' /')
+        subdir = self.config.get(sub_dir_key, '')
+        subdir = re.sub('//+', '/', subdir.strip('/'))
+        if subdir:
+            subdir += '/'
+        return '%s/%s' %(domain, subdir)
+        pass
 
     @property
     def feedUrl(self):
@@ -248,6 +264,19 @@ class Site:
     @property
     def isArticleFilenameUseDatePrefix(self):
         return self.config.get('filename_date_prefix', True)
+
+    @property
+    def isDevelopMode(self):
+        return self.config.get('dev_mode', False)
+
+    @property
+    def disgusShortname(self):
+        return self.config.get('disgus_shortname', '')
+
+    @property
+    def contentFilter(self):
+        return self.config.get('content_filter', [])
+        pass
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):
