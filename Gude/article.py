@@ -329,22 +329,22 @@ class ArticleBundle(object):
                 paged.append( self.articles[start:end] )
         return paged
 
-class Archive(ArticleBundle):
+class Archives(ArticleBundle):
     """ 存档 存档页 文章单页的输出 """
     def __init__(self, site, articles):
-        super(Archive, self).__init__(site)
+        super(Archives, self).__init__(site)
         self.articles = articles
 
     def printSelf(self):
-        print 'Archive:'
+        print 'Archives:'
 
     @property
     def templateName(self):
-        return 'archive'
+        return 'archives'
 
     @property
     def exportDir(self):
-        return 'archive'
+        return 'archives'
 
     @property
     def numPerPage(self):

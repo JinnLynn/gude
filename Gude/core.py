@@ -56,8 +56,8 @@ class Site:
         home.export()
 
         # 输出存档
-        archive = Archive(self, self.articles)
-        archive.export()
+        archives = Archives(self, self.articles)
+        archives.export()
 
         # 输出分类
         categories = Categories(self, self.articles)
