@@ -73,6 +73,11 @@ class Article(object):
             print "invalid article: date error '%s'" % self.site.getRelativePath(self.source)
             return False
 
+        # 时间超出现在的文章
+        if self.date > datetime.now():
+            print "date out: [%s] %s" %  (str(self.date), self.site.getRelativePath(self.source))
+            return False
+
         self.unique = self.date.strftime('%Y%m%d%H%M%S')
 
         # 解析分类
@@ -116,8 +121,6 @@ class Article(object):
                 self.date = date
                 break
         if not isinstance(self.date, datetime):
-            return False
-        if self.date > datetime.now():
             return False
         return True
 
