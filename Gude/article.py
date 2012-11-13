@@ -39,8 +39,7 @@ class Article(object):
         self.summary = ''
 
         self.metadata = {}
-
-        self.unique = ''.join(random.sample('9876543210zyxwvutsrqponmlkjihgfedcba', 5))
+        self.unique = ''
 
     def parse(self):
         if not os.path.exists(self.source):
@@ -73,6 +72,8 @@ class Article(object):
         if not self.checkDateAvailable():
             print "invalid article: date error '%s'" % self.site.getRelativePath(self.source)
             return False
+
+        self.unique = self.date.strftime('%Y%m%d%H%M%S')
 
         # 解析分类
         self.parseCategory()
