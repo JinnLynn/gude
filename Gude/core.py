@@ -26,7 +26,21 @@ class Site:
         self.lookup = TemplateLookup(directories=[template_dir], input_encoding='utf-8')
         
         self.articles = []
-        
+
+    def build(self):
+        # 删除发布目录
+        #+ 添加判断
+        if os.path.isdir(self.deployPath):
+            shutil.rmtree(self.deployPath)
+        os.makedirs(self.deployPath)
+
+        # 索引所有的文章
+        self.indexAllArticles()
+
+        # 导出
+        self.export()
+        pass
+
     def indexAllArticles(self):
         self.articles = []
         # 建立所有文章的数据库
@@ -102,14 +116,33 @@ class Site:
             fp.write(html.encode('utf-8'))
         print "    => %s" % self.getRelativePath(export_file)
 
-    def copyFiles(self):
-        print 
-        print 'Copy Files:'
+    def copyFiles(self): 
+        print_info = lambda f,t: '  %s\n    => %s' % (f, t)
+        print '\nCopy Files:'
 
         assets_path = self.generateDeployFilePath('assets', assign=True)
-        print '  %s\n    => %s' % (self.getRelativePath(self.assetsPath), self.getRelativePath(assets_path))
+        print print_info(self.getRelativePath(self.assetsPath), self.getRelativePath(assets_path))
         shutil.copytree(self.assetsPath, assets_path)
-        pass
+
+        files = self.config.get('file_copy', {})
+        if not isinstance(files, dict):
+            print "config 'file_copy' Error"
+            return
+
+        for f in files.keys():
+            if not os.path.exists(f):
+                print "file '%s' is non-existent" % f
+                continue
+            to_file = self.generateDeployFilePath(files[f], assign=True)
+            if os.path.exists(to_file):
+                print "file '%s' is already exists" % self.getRelativePath(to_file)
+                continue
+            if os.path.isfile(f):
+                shutil.copy(f, to_file)
+            elif os.path.isdir(f):
+                shutil.copytree(f, to_file)
+            print print_info(f, self.getRelativePath(to_file))
+        
 
     def testPrint(self):
         print 'db:'
@@ -391,17 +424,7 @@ class Gude(Application):
         self.startServer(args.port)
 
     def startBuild(self):
-        # 删除发布目录
-        #+ 添加判断
-        if os.path.isdir(self.site.deployPath):
-            shutil.rmtree(self.site.deployPath)
-        os.makedirs(self.site.deployPath)
-
-        # 索引所有的文章
-        self.site.indexAllArticles()
-
-        # 导出
-        self.site.export()
+        self.site.build()
 
     def startServer(self, port):
         httpd_ = server.Server(self, port)
