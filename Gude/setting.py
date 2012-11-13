@@ -49,3 +49,6 @@ ARTICLE_DATE_FORMAT =['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d',  '%c', 
 
 ARTICLE_FILENAME_PREFIX_FORMAT = '%Y-%m-%d-'
 ARTICLE_FILENAME_PREFIX_LEN = 11 # 形如 2001-01-02-FILENAME
+
+# 生成网站时不删除的文件 在deploy
+DEPLOY_UNDELETE_FILES = ['.git']

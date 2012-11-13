@@ -9,6 +9,7 @@ from commando.commando import *
 import util, server
 from article import *
 from setting import *
+from publisher import *
 
 class Site:
     def __init__(self):
@@ -29,10 +30,16 @@ class Site:
 
     def build(self):
         # 删除发布目录
-        #+ 添加判断
-        if os.path.isdir(self.deployPath):
-            shutil.rmtree(self.deployPath)
-        os.makedirs(self.deployPath)
+        if not os.path.isdir(self.deployPath):
+            os.makedirs(self.deployPath)
+        for f in os.listdir(self.deployPath):
+            if f in DEPLOY_UNDELETE_FILES:
+                continue
+            abs_path = self.generateDeployFilePath(f, assign = True)
+            if os.path.isdir(abs_path):
+                shutil.rmtree(abs_path)
+            if os.path.isfile(abs_path):
+                os.remove(abs_path)
 
         # 索引所有的文章
         self.indexAllArticles()
@@ -133,7 +140,7 @@ class Site:
             if not os.path.exists(f):
                 print "file '%s' is non-existent" % f
                 continue
-            to_file = self.generateDeployFilePath(files[f], assign=True)
+            to_file = os.path.join(self.deployPath, files[f]) # 保留指定的文件大小写 不能用generateDeployFilePath
             if os.path.exists(to_file):
                 print "file '%s' is already exists" % self.getRelativePath(to_file)
                 continue
@@ -422,6 +429,19 @@ class Gude(Application):
     @store('-p', '--port', type=int, default=DEFAULT_SERVER_PORT, dest='port', help='The port where the website must be served from.')
     def serve(self, args):
         self.startServer(args.port)
+
+    @subcommand('publish', help='Publish the website')
+    @true('-c', default=False, dest='clean', help='Clean git repo if use Git to publish')
+    @true('--initgitftp', default=False, dest='initgitftp', help='init git ftp')
+    def publish(self, args):
+        publisher = Publisher(self.site)
+        os.chdir(self.site.deployPath)
+        if args.clean:
+            publisher.clean()
+        elif args.initgitftp:
+            publisher.publishByGitFtp(init=True)
+        else:
+            publisher.publish()
 
     def startBuild(self):
         self.site.build()
