@@ -90,7 +90,7 @@ class Article(object):
         for line in lines[index:]:
             if line.strip(' \t').find('<!--more-->') == 0:
                 self.summary = self.content
-                line = '<span id="more-%s"></span>' % self.unique
+                line = '<span id="more-%s"></span>\n' % self.unique
             self.content += line
 
         self.content.strip('\n\t ')
