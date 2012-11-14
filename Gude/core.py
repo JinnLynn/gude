@@ -247,7 +247,7 @@ class Site:
     # 存档页文章数
     @property
     def numPerPageInArchive(self):
-        return self.config.get('num_per_page_in_archive', 50)
+        return self.config.get('num_in_archive', 50)
 
     # Feed输出的文章数量
     def numInFeed(self):
