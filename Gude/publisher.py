@@ -39,7 +39,7 @@ class Publisher(object):
         if not os.path.exists('.git') or not os.path.isdir('.git'):
             self.forceInitGitRepo()
         os.system('git add .')
-        os.system('git commit -m "update"')
+        os.system('git commit -am "update"')
         os.system('git push -f "%s" master' % remote)
 
     def publishByGitFtp(self, init=False):
@@ -52,8 +52,8 @@ class Publisher(object):
         if not os.path.exists('.git') or not os.path.isdir('.git'):
             self.forceInitGitRepo()
         os.system('git add .')
-        os.system('git commit -m "update"')
-        
+        os.system('git commit -am "update"')
+
         server = self.site.config.get('ftp_server', '')
         usr = self.site.config.get('ftp_usr', '')
         pwd = self.site.config.get('ftp_pwd', '')
