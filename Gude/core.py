@@ -16,17 +16,25 @@ class Site:
         # 配置
         self.config = DEFAULT_CONFIG
 
-        config_file = os.path.join(SITE_PATH, DEFAULT_CONFIG_FILE)
-        with open(config_file) as f:
-            for k, v in yaml.load(f).items():
-                k = util.stdKey(k)
-                self.config[k] = v
+        try:
+            config_file = os.path.join(SITE_PATH, DEFAULT_CONFIG_FILE)
+            with open(config_file) as f:
+                for k, v in yaml.load(f).items():
+                    k = util.stdKey(k)
+                    self.config[k] = v           
+        except:
+            pass
+
 
         # 模板
         template_dir = os.path.join(SITE_PATH, 'layout')
         self.lookup = TemplateLookup(directories=[template_dir], input_encoding='utf-8')
         
         self.articles = []
+
+    def checkDir(self):
+        if not os.path.exists(DEFAULT_CONFIG_FILE):
+            util.die('config file [%s] is non-existent.' % DEFAULT_CONFIG_FILE)
 
     def build(self):
         # 删除发布目录
@@ -354,10 +362,6 @@ class Gude(Application):
     ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
 
     def __init__(self):
-
-        if not os.path.exists(DEFAULT_CONFIG_FILE):
-            util.die('config file [%s] is non-existent.' % DEFAULT_CONFIG_FILE)
-
         self.site = Site()
 
     def run(self, args=None):
@@ -390,7 +394,8 @@ class Gude(Application):
     @subcommand('build', help='build a new site.')
     @true('-f', default=False, dest='overwrite')
     @true('-p', '--preview', default=False, dest='preview', help='start webserver after builded.')
-    def build(self, args):  
+    def build(self, args): 
+        self.site.checkDir()
         self.startBuild()
         if args.preview:
             self.startServer(DEFAULT_SERVER_PORT)
@@ -402,6 +407,8 @@ class Gude(Application):
     @store('-l', default='', dest='layout' )
     @true('--html', default=False, dest='is_html', help='Use HTML type, default is Markdown')
     def add(self, args):
+        self.site.checkDir()
+
         if not args.filename and not args.title:
             print 'something error'
             return
@@ -434,6 +441,7 @@ class Gude(Application):
     @true('-c', default=False, dest='clean', help='Clean git repo if use Git to publish')
     @true('--initgitftp', default=False, dest='initgitftp', help='init git ftp')
     def publish(self, args):
+        self.site.checkDir()
         publisher = Publisher(self.site)
         os.chdir(self.site.deployPath)
         if args.clean:
