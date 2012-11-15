@@ -24,13 +24,9 @@ class Site:
                     self.config[k] = v           
         except:
             pass
-
-
-        # 模板
-        template_dir = os.path.join(SITE_PATH, 'layout')
-        self.lookup = TemplateLookup(directories=[template_dir], input_encoding='utf-8')
         
         self.articles = []
+        self.lookup = None
 
     def checkDir(self):
         if not os.path.exists(DEFAULT_CONFIG_FILE):
@@ -136,7 +132,7 @@ class Site:
         print '\nCopy Files:'
 
         assets_path = self.generateDeployFilePath('assets', assign=True)
-        print print_info(self.getRelativePath(self.assetsPath), self.getRelativePath(assets_path))
+        print print_info('assets', self.getRelativePath(assets_path))
         shutil.copytree(self.assetsPath, assets_path)
 
         files = self.config.get('file_copy', {})
@@ -213,12 +209,9 @@ class Site:
         return False
 
     def getTemplate(self, name):
+        if not self.lookup:
+            self.lookup = TemplateLookup(directories=[self.layoutPath], input_encoding='utf-8')
         return self.lookup.get_template(util.tplFile(str(name)))
-
-    # 静态文件路径
-    @property
-    def staticFilePath(self):
-        return os.path.join(SCRIPT_PATH, 'files')
 
     # 原始文章路径
     @property
@@ -230,10 +223,27 @@ class Site:
     def deployPath(self):
         return os.path.join(SITE_PATH, 'deploy')
 
+    # 网站主题路径
+    # 站点工作目录 => 脚本目录
+    @property
+    def themePath(self):
+        cur_theme = self.config.get('theme', 'default')
+        theme_path = os.path.join(SITE_PATH, 'theme', cur_theme)
+        if os.path.isdir(theme_path):
+            return theme_path
+        theme_path = os.path.join(SCRIPT_PATH, 'theme', cur_theme)
+        if os.path.isdir(theme_path):
+            return theme_path
+        util.die('theme [%s] is non-existent.' % cur_theme)
+
     # 资源文件路径
     @property
     def assetsPath(self):
-        return os.path.join(SITE_PATH, 'assets')
+        return os.path.join(self.themePath, 'assets')
+
+    @property
+    def layoutPath(self):
+        return os.path.join(self.themePath, 'layout')
 
     @property
     def feedFilename(self):
