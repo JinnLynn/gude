@@ -384,22 +384,29 @@ class Gude(Application):
         pass
 
     @subcommand('init', help='Create a new site.')
-    @true('-f', '--force', default=False, dest='overwrite', help='Overwrite the current site if it exists')
+    @true('-f', '--force', default=False, dest='force', help='Overwrite the current site if it exists')
     def init(self, args):
-        if os.listdir(SITE_PATH) and (not util.isOptExists('f')):
-            util.die(u" %s is not empty" % SITE_PATH)
-        # 强制 删除旧的文件
-        if args.overwrite:
-            for exist_file in os.listdir(SITE_PATH):
-                abs_path = os.path.join(SITE_PATH, exist_file)
-                shutil.rmtree(abs_path) if os.path.isdir(abs_path) else os.remove(abs_path)
+        # 目录下存在文件
+        if os.listdir(SITE_PATH):
+            if not args.force:
+                util.die(u" %s is not empty" % SITE_PATH)
+            else:
+                confirm = raw_input('remove all files? yes OR no:')
+                if confirm == 'yes':
+                    for exist_file in os.listdir(SITE_PATH):
+                        abs_path = os.path.join(SITE_PATH, exist_file)
+                        shutil.rmtree(abs_path) if os.path.isdir(abs_path) else os.remove(abs_path)
+                else:
+                    return
 
-        # 拷贝文件
-        for src_file in os.listdir(self.staticFilePath):
-            src = os.path.join(self.staticFilePath, src_file)
-            dst = os.path.join(SITE_PATH, src_file)
-            print src, dst
-            shutil.copytree(src, dst) if os.path.isdir(src) else shutil.copy(src, dst)
+        for d in SITE_INCLUDE_DIR:
+            os.makedirs(d)
+        
+        with codecs.open(DEFAULT_CONFIG_FILE, 'w', encoding='utf-8') as fp:
+            fp.write(SITE_CONFIG_TEMPLATE)
+
+        print 'everything is ready.'
+
 
     @subcommand('build', help='build a new site.')
     @true('-f', default=False, dest='overwrite')

@@ -24,8 +24,55 @@ DEFAULT_CONFIG = {
     'categories':           [],
 
     'default_layout':       'post',
-    'extension':            'html'
 }
+
+# 站点下包含的目录     文章       发布       静态文件   本地主题
+SITE_INCLUDE_DIR = ['content', 'deploy', 'static', 'theme']
+
+SITE_CONFIG_TEMPLATE= u"""---
+domain:                 'http://YOURDOMAIN.com/'
+subdirectory:           '/'
+theme:                  'default'
+title:                  'YOUR SITE TITLE'
+tagline:                'YOUR SITE TAGLINE'
+author:                 'YOUR NAME'
+category:               ['Misc']
+
+num_per_page:           5
+num_in_feed:            10
+num_in_archive:         50
+
+disgus_shortname:       'YOUR DISGUS SHORTNAME'
+
+default_layout:         'post'
+filename_date_prefix:   yes
+
+# 指定生成的文件名 KEY: 相对文章目录 VALUE: 相对发布目录
+#designated:
+#    '1999-08-25-projects.md':   'projects/index.html'
+
+content_filter:         ['Shortcode', 'CenterElement']
+
+# 拷贝文件 KEY: 相对站点工作目录 VALUE: 相对发布目录
+#file_copy:
+#    'static/htaccess':         '.htaccess'
+#    'static/CNAME':             'CNAME'
+
+# publish: git gitftp
+publish_type:           'YOUR PUBLISH TYPE'
+
+git_remote:             ''
+
+ftp_server:             ''
+ftp_usr:                ''
+ftp_pwd:                ''
+
+# 开发模式
+dev_mode:               no
+dev_domain:             'http://localhost:8910'
+dev_subdirectory:       '/'
+...
+"""
 
 # 文章相关配置
 # 生成模板
