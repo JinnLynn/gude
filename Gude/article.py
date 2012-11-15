@@ -88,7 +88,9 @@ class Article(object):
         self.content = ''
         self.summary = ''
         for line in lines[index:]:
-            if line.strip(' \t').find('<!--more-->') == 0:
+            # 类似 <!--more--> 的标示
+            line_strip = line.strip(' \t\r\n')
+            if line_strip.find('<!--') == 0 and line_strip.find('more') and line_strip.find('-->'):
                 self.summary = self.content
                 line = '<span id="more-%s"></span>\n' % self.unique
             self.content += line
