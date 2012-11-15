@@ -18,53 +18,58 @@ class Publisher(object):
         if pub_type == PT_GIT or pub_type == PT_GITFTP:
             self.forceInitGitRepo()
 
-    def publish(self):
+    def publish(self, **kwargs):
         pub_type = self.getPublishType()
         print 'Publish Type: %s' % pub_type
+        force = kwargs.get('force', False)
         if pub_type == PT_GIT:
-            self.publishByGit()
+            self.publishByGit(force=force)
         elif pub_type == PT_GITFTP:
-            self.publishByGitFtp()
+            self.publishByGitFtp(force=force)
             pass
 
-    def publishByGit(self):
-        if not self.isCommandExists('git'):
-            print 'GIT is non-existent'
+    def publishByGit(self, force=False):
+        if not self.checkGit():
             return
         remote = self.site.config.get('git_remote', '');
         if not remote:
             print 'config git_remote not found'
             return
+        
+        option = '-u'
+        option += '' if not force else 'f'
+        os.system('git push %s "%s" master' % (option, remote) )
 
-        if not os.path.exists('.git') or not os.path.isdir('.git'):
-            self.forceInitGitRepo()
-        os.system('git add .')
-        os.system('git commit -am "update"')
-        os.system('git push -f "%s" master' % remote)
-
-    def publishByGitFtp(self, init=False):
-        if self.getPublishType() is not PT_GITFTP:
-            print 'publish type is not %s' % PT_GITFTP
+    def publishByGitFtp(self, force=False):
+        if not self.checkGit():
             return
-        if not self.isCommandExists('git'):
-            print 'GIT is non-existent'
-            return
-        if not os.path.exists('.git') or not os.path.isdir('.git'):
-            self.forceInitGitRepo()
-        os.system('git add .')
-        os.system('git commit -am "update"')
 
         server = self.site.config.get('ftp_server', '')
         usr = self.site.config.get('ftp_usr', '')
         pwd = self.site.config.get('ftp_pwd', '')
-        cmd = 'init' if init else 'push'
-        os.system('git ftp %s -u "%s" -p "%s" "%s"' % (cmd, usr, pwd, server))
+        server_str = '-u "%s" -p "%s" "%s"' % (usr, pwd, server)
+        option = ''
+        if force:
+            # 强制 先上传当前的GIT SHA1到log(防止此时服务器是未git ftp init的状态)
+            #      然后上传所有文件
+            os.system('git ftp catchup %s' % server_str)
+            option = '-a'
+        os.system('git ftp push %s %s' % (option, server_str))
+
+    def checkGit(self):
+        if not self.isCommandExists('git'):
+            print 'GIT is non-existent'
+            return False
+        if not os.path.exists('.git') or not os.path.isdir('.git'):
+            self.forceInitGitRepo()
+        os.system('git add .')
+        os.system('git commit -am "update"')
+        return True
 
     def forceInitGitRepo(self):
         if os.path.exists('.git'):
             shutil.rmtree('.git')
         os.system('git init')
-
 
     def isCommandExists(self, program):
         def is_exe(fpath):

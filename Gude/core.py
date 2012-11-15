@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys, os, shutil, codecs, re
 from datetime import datetime
+from glob import glob
 
 import yaml
 from mako.lookup import TemplateLookup
@@ -140,20 +141,22 @@ class Site:
         if not isinstance(files, dict):
             print "config 'file_copy' Error"
             return
-
+        
         for f in files.keys():
-            if not os.path.exists(f):
+            from_files = glob(f)
+            if not len(from_files):
                 print "file '%s' is non-existent" % f
                 continue
             to_file = os.path.join(self.deployPath, files[f]) # 保留指定的文件大小写 不能用generateDeployFilePath
-            if os.path.exists(to_file):
+            if os.path.exists(to_file) and not os.path.isdir(to_file):
                 print "file '%s' is already exists" % self.getRelativePath(to_file)
                 continue
-            if os.path.isfile(f):
-                shutil.copy(f, to_file)
-            elif os.path.isdir(f):
-                shutil.copytree(f, to_file)
-            print print_info(f, self.getRelativePath(to_file))
+            for from_file in from_files:  
+                if os.path.isfile(from_file):
+                    shutil.copy(from_file, to_file)
+                elif os.path.isdir(from_file):
+                    shutil.copytree(from_file, to_file)
+                print print_info(from_file, self.getRelativePath(to_file))
         
 
     def testPrint(self):
@@ -454,18 +457,16 @@ class Gude(Application):
         self.startServer(args.port)
 
     @subcommand('publish', help='Publish the website')
-    @true('-c', default=False, dest='clean', help='Clean git repo if use Git to publish')
-    @true('--initgitftp', default=False, dest='initgitftp', help='init git ftp')
+    @true('-c', default=False, dest='clean', help='Clean git repo')
+    @true('-f', '--force', default=False, dest='force', help="force update")
     def publish(self, args):
         self.site.checkDir()
         publisher = Publisher(self.site)
         os.chdir(self.site.deployPath)
         if args.clean:
             publisher.clean()
-        elif args.initgitftp:
-            publisher.publishByGitFtp(init=True)
         else:
-            publisher.publish()
+            publisher.publish(force=args.force)
 
     def startBuild(self):
         self.site.build()
