@@ -15,6 +15,7 @@ class Site:
     def __init__(self):
         # 配置
         self.config = DEFAULT_CONFIG
+        self.isDevelopMode = False
 
         try:
             config_file = os.path.join(SITE_PATH, DEFAULT_CONFIG_FILE)
@@ -324,10 +325,6 @@ class Site:
         return self.config.get('filename_date_prefix', True)
 
     @property
-    def isDevelopMode(self):
-        return self.config.get('dev_mode', False)
-
-    @property
     def disgusShortname(self):
         return self.config.get('disgus_shortname', '')
 
@@ -401,7 +398,7 @@ class Gude(Application):
 
         for d in SITE_INCLUDE_DIR:
             os.makedirs(d)
-        
+
         with codecs.open(DEFAULT_CONFIG_FILE, 'w', encoding='utf-8') as fp:
             fp.write(SITE_CONFIG_TEMPLATE)
 
@@ -411,7 +408,9 @@ class Gude(Application):
     @subcommand('build', help='build a new site.')
     @true('-f', default=False, dest='overwrite')
     @true('-p', '--preview', default=False, dest='preview', help='start webserver after builded.')
+    @true('-d', '--devmode', default=False, dest='devmode', help='build in develop mode')
     def build(self, args): 
+        self.site.isDevelopMode = args.devmode
         self.site.checkDir()
         self.startBuild()
         if args.preview:

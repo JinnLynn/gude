@@ -68,7 +68,6 @@ ftp_usr:                ''
 ftp_pwd:                ''
 
 # 开发模式
-dev_mode:               no
 dev_domain:             'http://localhost:8910'
 dev_subdirectory:       '/'
 ...
