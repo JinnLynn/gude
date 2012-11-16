@@ -330,7 +330,10 @@ class Site:
     @property
     def contentFilter(self):
         return self.config.get('content_filter', [])
-        pass
+
+    @property
+    def isGitHubProjectPage(self):
+        return self.config.get('github_project_page', False)
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):
@@ -401,6 +404,9 @@ class Gude(Application):
         with codecs.open(DEFAULT_CONFIG_FILE, 'w', encoding='utf-8') as fp:
             fp.write(SITE_CONFIG_TEMPLATE)
 
+        if not self.createGitRepo():
+            return
+
         print 'everything is ready.'
 
 
@@ -463,6 +469,42 @@ class Gude(Application):
         else:
             publisher.publish(force=args.force)
 
+    @subcommand('backup', help='Backup site with GIT')
+    @true('-c', default=False, dest='clean', help='Clean git repo')
+    @true('--remote', default=False, dest='remote', help='push to remote server')
+    @true('-f', default=False, dest='force', help='force push')
+    def backup(self, args):
+        # 使用GIT备份
+
+        # 重建Git repo
+        if args.clean:
+            confirm = raw_input('remove old git repo and rebuild it? yes OR no:')
+            if confirm == 'yes':
+                os.system('(rm -rf .git*) > /dev/null')
+                self.createGitRepo()
+            return
+
+        # 提交改变
+        os.system('git add . && git commit -am "backup at %s" > /dev/null' % util.utcNow())
+
+        # 如果是GitHub项目主页 则 分支为master 否则为source
+        branch = 'master' if self.site.isGitHubProjectPage else 'source'
+        # 当前的分支不是想要的
+        is_cur_branch = False
+        for l in os.popen('git branch').readlines():
+            if l.strip(' \n') == ('* %s' % branch):
+                is_cur_branch = True
+                break
+        if not is_cur_branch:
+            os.system('git branch -M %s > /dev/null' % branch)
+        print 'local backup success.'
+        if not args.remote:
+            return
+        server = self.site.config.get('git_remote', '');
+        force_opt = '--force' if args.force else ''
+        ret = os.system('git push %s %s %s' % (force_opt, server, branch))
+        print 'remote backup [%s %s] %s.' % (server, branch, 'success' if ret == 0 else 'fail')
+
     def startBuild(self):
         self.site.build()
 
@@ -488,6 +530,18 @@ class Gude(Application):
             if base == basename:
                 return True
         return False
+
+    def createGitRepo(self):
+        if os.path.isdir('.git'):
+            return True
+        if not os.path.isfile('.gitignore'):
+            with codecs.open('.gitignore', 'w', encoding='utf-8') as fp:
+                fp.write(GITIGNORE_SITE)
+        if os.system('(git init && git add . && git commit -m "init") > /dev/null'):
+            print 'create git repo fail'
+            return False
+        return True
+
 
 if __name__ == '__main__':
     Gude().run()

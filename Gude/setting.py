@@ -97,3 +97,32 @@ ARTICLE_FILENAME_PREFIX_LEN = 11 # 形如 2001-01-02-FILENAME
 
 # 生成网站时不删除的文件 在deploy
 DEPLOY_UNDELETE_FILES = ['.git']
+
+# GIT 忽略文件列表
+GITIGNORE_SITE = u"""
+/deploy/
+*.pyc
+
+# Windows
+[Dd]esktop.ini
+[Tt]humbs.db
+$RECYCLE.BIN/
+
+# MacOSX
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+"""
+GITIGNORE_DEPLOY = u"""
+# Windows
+[Dd]esktop.ini
+[Tt]humbs.db
+$RECYCLE.BIN/
+
+# MacOSX
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+"""

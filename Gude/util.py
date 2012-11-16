@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 import sys, os, re, urllib
+from datetime import datetime
 
 from markdown import markdown as MarkdownConvert
 
@@ -19,6 +20,8 @@ cleanSlash = lambda s: re.sub('//+', '/', s)
 standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
 
 markdown = lambda s: MarkdownConvert(s, ['fenced_code']) 
+
+utcNow = lambda: '%s UTC' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') 
 
 
 # 如果文件夹不存在则创建

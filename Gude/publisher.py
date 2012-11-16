@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os,shutil
+import os,shutil,codecs
+import util
+from setting import *
 
 PT_GIT = 'GIT'
 PT_GITFTP = 'GITFTP'
@@ -22,28 +24,38 @@ class Publisher(object):
         pub_type = self.getPublishType()
         print 'Publish Type: %s' % pub_type
         force = kwargs.get('force', False)
+
+        if not self.checkGit():
+            return
+
+        # 准备分支
+        is_cur_branch = False
+        for l in os.popen('git branch').readlines():
+            if l.strip(' \n') == ('* %s' % self.publishBranch):
+                is_cur_branch = True
+                break
+        if not is_cur_branch:
+            os.system('git branch -M %s > /dev/null' % self.publishBranch)
+
         if pub_type == PT_GIT:
             self.publishByGit(force=force)
         elif pub_type == PT_GITFTP:
             self.publishByGitFtp(force=force)
-            pass
+        else:
+            print 'unsupported publish type.'
 
     def publishByGit(self, force=False):
-        if not self.checkGit():
-            return
         remote = self.site.config.get('git_remote', '');
         if not remote:
-            print 'config git_remote not found'
+            print 'config git_remote not found.'
             return
         
         option = '-u'
         option += '' if not force else 'f'
-        os.system('git push %s "%s" master' % (option, remote) )
+        ret = os.system('git push %s "%s" %s' % (option, remote, self.publishBranch) )
+        print 'publish [%s %s] %s.' % (remote, self.publishBranch, 'success' if ret == 0 else 'fail')
 
     def publishByGitFtp(self, force=False):
-        if not self.checkGit():
-            return
-
         server = self.site.config.get('ftp_server', '')
         usr = self.site.config.get('ftp_usr', '')
         pwd = self.site.config.get('ftp_pwd', '')
@@ -54,22 +66,28 @@ class Publisher(object):
             #      然后上传所有文件
             os.system('git ftp catchup %s' % server_str)
             option = '-a'
-        os.system('git ftp push %s %s' % (option, server_str))
+        ret = os.system('git ftp push %s %s' % (option, server_str))
+        print 'publish [%s] %s.' % (server, 'success' if ret == 0 else 'fail')
 
     def checkGit(self):
         if not self.isCommandExists('git'):
             print 'GIT is non-existent'
             return False
-        if not os.path.exists('.git') or not os.path.isdir('.git'):
+        if not os.path.isdir('.git'):
             self.forceInitGitRepo()
-        os.system('git add .')
-        os.system('git commit -am "update"')
+        os.system('git add . && git commit -am "update at %s"' % util.utcNow())
         return True
 
     def forceInitGitRepo(self):
         if os.path.exists('.git'):
             shutil.rmtree('.git')
-        os.system('git init')
+        if not os.path.isfile('.gitignore'):
+            with codecs.open('.gitignore', 'w', encoding='utf-8') as fp:
+                fp.write(GITIGNORE_DEPLOY)
+        if not os.path.isfile('index.html'):
+            with codecs.open('index.html', 'w', encoding='utf-8') as fp:
+                fp.write('coming soon...')
+        os.system('(git init && git add . && git commit -am "init") > /dev/null')
 
     def isCommandExists(self, program):
         def is_exe(fpath):
@@ -93,4 +111,9 @@ class Publisher(object):
             if key == config:
                 return PTMAP[key]
         return PT_UNKNOWN
+
+    @property
+    def publishBranch(self):
+        # 项目页 gh-pages 其它 master
+        return 'gh-pages' if self.site.isGitHubProjectPage else 'master'
         
