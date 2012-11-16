@@ -45,7 +45,6 @@ num_in_archive:         50
 disgus_shortname:       'YOUR DISGUS SHORTNAME'
 
 default_layout:         'post'
-filename_date_prefix:   yes
 
 # 指定生成的文件名 KEY: 相对文章目录 VALUE: 相对发布目录
 #designated:

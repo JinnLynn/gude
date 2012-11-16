@@ -324,10 +324,6 @@ class Site:
         return self.config.get('category', [])
 
     @property
-    def isArticleFilenameUseDatePrefix(self):
-        return self.config.get('filename_date_prefix', True)
-
-    @property
     def disgusShortname(self):
         return self.config.get('disgus_shortname', '')
 
@@ -440,8 +436,7 @@ class Gude(Application):
             return
         filename = args.filename
         filename += '.html' if args.is_html else '.md' 
-        if self.site.isArticleFilenameUseDatePrefix:
-            filename = '%s%s' % (datetime.now().strftime(ARTICLE_FILENAME_PREFIX_FORMAT), filename)
+        filename = '%s%s' % (datetime.now().strftime(ARTICLE_FILENAME_PREFIX_FORMAT), filename)
         abspath = os.path.join(self.site.articlePath, args.dirname, filename)
         if not args.layout:
             args.layout = self.site.defaultLayout
@@ -489,8 +484,7 @@ class Gude(Application):
             print "directory '%s' created." % self.site.getRelativePath(abs_dir)
         for f in os.listdir(abs_dir):
             base, extionsion = os.path.splitext(f)
-            if self.site.isArticleFilenameUseDatePrefix:
-                base = base[ARTICLE_FILENAME_PREFIX_LEN:]
+            base = base[ARTICLE_FILENAME_PREFIX_LEN:]
             if base == basename:
                 return True
         return False

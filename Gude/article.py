@@ -187,13 +187,12 @@ class Article(object):
     @property
     def exportBasename(self):
         source_basename = os.path.splitext(os.path.split(self.source)[1])[0]
-        if self.site.isArticleFilenameUseDatePrefix:
-            try:
-                # 尝试解析日期前缀 如果成功则返回去除日期的 否则为原始
-                datetime.strptime(source_basename[0:ARTICLE_FILENAME_PREFIX_LEN], ARTICLE_FILENAME_PREFIX_FORMAT)
-                return source_basename[ARTICLE_FILENAME_PREFIX_LEN:] 
-            except Exception, e:
-                 pass
+        try:
+            # 尝试解析日期前缀 如果成功则返回去除日期的 否则为原始
+            datetime.strptime(source_basename[0:ARTICLE_FILENAME_PREFIX_LEN], ARTICLE_FILENAME_PREFIX_FORMAT)
+            return source_basename[ARTICLE_FILENAME_PREFIX_LEN:] 
+        except Exception, e:
+            pass
         return source_basename
 
     def getFeedItem(self):
