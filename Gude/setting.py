@@ -106,7 +106,7 @@ ARTICLE_FILENAME_PREFIX_FORMAT = '%Y-%m-%d-'
 ARTICLE_FILENAME_PREFIX_LEN = 11 # 形如 2001-01-02-FILENAME
 
 # 生成网站时不删除的文件 在deploy
-DEPLOY_UNDELETE_FILES = ['.git']
+DEPLOY_UNDELETE_FILES = ['.git', '.gitignore', 'README.md']
 
 # GIT 忽略文件列表
 GITIGNORE_SITE = u"""
@@ -138,4 +138,18 @@ $RECYCLE.BIN/
 ._*
 .Spotlight-V100
 .Trashes
+"""
+
+README_TEMPLATE = """
+# A personal website powered by [Gude][]. 
+
+## What is Gude?
+
+[Gude][] is a simple static site generator, written in Python.
+
+* Simple, very easy to use
+* Work with GIT & GitHub
+* Completely static output
+
+[Gude]: http://jeeker.net/projects/gude/
 """

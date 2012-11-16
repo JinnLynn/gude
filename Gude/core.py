@@ -406,6 +406,10 @@ class Gude(Application):
         util.writeToFile(DEFAULT_CONFIG_FILE, SITE_CONFIG_TEMPLATE)
         util.writeToFile(DEFAULT_FTP_CONFIG_FILE, SITE_FTP_CONFIG_TEMPLATE)
 
+        # README
+        util.writeToFile('README.md', README_TEMPLATE)
+        util.writeToFile('deploy/README.md', README_TEMPLATE)
+
         if not self.createGitRepo():
             return
 
