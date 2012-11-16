@@ -60,15 +60,25 @@ content_filter:         ['Shortcode', 'CenterElement']
 # publish: git gitftp
 publish_type:           'YOUR PUBLISH TYPE'
 
-git_remote:             ''
+# 如果是github_project_page 则deploy发布到gh-pages分支 site内容发布
+# 否则deploy发布到master 站点原始发布到source
+github_project_page:    no
+git_remote:             'YOUR GITHUB REPO URL'
 
-ftp_server:             ''
-ftp_usr:                ''
-ftp_pwd:                ''
+# 为避免在使用GIT时提交本配置文件时泄露FTP信息，FTP服务器的配置在 ftp-config.yaml
+# 其键值为ftp_server、 ftp_usr、 ftp_pwd
 
 # 开发模式
 dev_domain:             'http://localhost:8910'
 dev_subdirectory:       '/'
+...
+"""
+
+DEFAULT_FTP_CONFIG_FILE = 'ftp-config.yaml'
+SITE_FTP_CONFIG_TEMPLATE = u"""---
+ftp_server:             'YOUR FTP SERVER'
+ftp_usr:                'YOUR FTP USER'
+ftp_pwd:                'YOUR FTP PASSWORD'
 ...
 """
 
@@ -101,6 +111,8 @@ DEPLOY_UNDELETE_FILES = ['.git']
 # GIT 忽略文件列表
 GITIGNORE_SITE = u"""
 /deploy/
+ftp-config.yaml
+
 *.pyc
 
 # Windows
@@ -114,6 +126,7 @@ $RECYCLE.BIN/
 .Spotlight-V100
 .Trashes
 """
+
 GITIGNORE_DEPLOY = u"""
 # Windows
 [Dd]esktop.ini

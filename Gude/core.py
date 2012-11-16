@@ -404,6 +404,9 @@ class Gude(Application):
         with codecs.open(DEFAULT_CONFIG_FILE, 'w', encoding='utf-8') as fp:
             fp.write(SITE_CONFIG_TEMPLATE)
 
+        with codecs.open(DEFAULT_FTP_CONFIG_FILE, 'w', encoding='utf-8') as fp:
+            fp.write(SITE_FTP_CONFIG_TEMPLATE)
+
         if not self.createGitRepo():
             return
 
