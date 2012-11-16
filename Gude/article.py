@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, codecs, random
+import sys, os, codecs
 from datetime import datetime
 
 import yaml

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, shutil, codecs, re
+import sys, os, shutil, re
 from datetime import datetime
 from glob import glob
 
@@ -125,6 +125,7 @@ class Site:
             pass
         assert template, "template '%s' is non-existent" % template_name
         html = template.render_unicode(**data).strip()
+        # 编码问题 不能用 util.writeToFile
         with open(export_file, 'w') as fp:
             fp.write(html.encode('utf-8'))
         print "    => %s" % self.getRelativePath(export_file)
@@ -401,11 +402,9 @@ class Gude(Application):
         for d in SITE_INCLUDE_DIR:
             os.makedirs(d)
 
-        with codecs.open(DEFAULT_CONFIG_FILE, 'w', encoding='utf-8') as fp:
-            fp.write(SITE_CONFIG_TEMPLATE)
-
-        with codecs.open(DEFAULT_FTP_CONFIG_FILE, 'w', encoding='utf-8') as fp:
-            fp.write(SITE_FTP_CONFIG_TEMPLATE)
+        # 写入配置文件
+        util.writeToFile(DEFAULT_CONFIG_FILE, SITE_CONFIG_TEMPLATE)
+        util.writeToFile(DEFAULT_FTP_CONFIG_FILE, SITE_FTP_CONFIG_TEMPLATE)
 
         if not self.createGitRepo():
             return
@@ -451,8 +450,7 @@ class Gude(Application):
             args.layout = self.site.defaultLayout
         
         header = ARTICLE_TEMPLATE % (args.layout, args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        with codecs.open(abspath, 'w', encoding='utf-8') as fp:
-            fp.write(header)
+        util.writeToFile(abspath, header)
         print "article '%s' created." % self.site.getRelativePath(abspath)
 
     @subcommand('serve', help='Serve the website')
@@ -538,8 +536,7 @@ class Gude(Application):
         if os.path.isdir('.git'):
             return True
         if not os.path.isfile('.gitignore'):
-            with codecs.open('.gitignore', 'w', encoding='utf-8') as fp:
-                fp.write(GITIGNORE_SITE)
+            util.writeToFile('.gitignore', GITIGNORE_SITE)
         if os.system('(git init && git add . && git commit -m "init") > /dev/null'):
             print 'create git repo fail'
             return False

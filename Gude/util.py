@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import sys, os, re, urllib
+import sys, os, re, urllib, codecs
 from datetime import datetime
 
 from markdown import markdown as MarkdownConvert
@@ -21,7 +21,14 @@ standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
 
 markdown = lambda s: MarkdownConvert(s, ['fenced_code']) 
 
-utcNow = lambda: '%s UTC' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S') 
+# UTC时间字符串
+utcNow = lambda: '%s UTC' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+
+# 文件写入
+#writeToFile = lambda f, c: with codecs.open(f, 'w', encoding='utf-8') as fp: ( fp.write(c) )
+def writeToFile(f, c):
+     with codecs.open(f, 'w', encoding='utf-8') as fp:
+        fp.write(c)
 
 
 # 如果文件夹不存在则创建
