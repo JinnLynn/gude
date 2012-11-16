@@ -8,19 +8,6 @@ import PyRSS2Gen.PyRSS2Gen as RSS2Gen
 import util
 from setting import *
 
-"""
-文章信息
-
-layout   : 布局名称
-title    : 标题
-date     : 发布时间
-tags     : 标签
-category : 分类
-
-source   : 原始文件名
-content  : 内容
-"""
-
 """ 单篇文章 """
 class Article(object):
     

@@ -60,7 +60,6 @@ class Publisher(object):
 
     def publishByGitFtp(self, force=False):
         config_file = os.path.join(SITE_PATH, DEFAULT_FTP_CONFIG_FILE)
-        print config_file
         if not os.path.isfile(config_file):
             print 'FTP config [%s] is non-existent.' % DEFAULT_FTP_CONFIG_FILE
             return
