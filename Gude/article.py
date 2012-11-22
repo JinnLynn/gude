@@ -3,7 +3,7 @@ import sys, os, codecs
 from datetime import datetime
 
 import yaml
-import PyRSS2Gen.PyRSS2Gen as RSS2Gen 
+import feedgenerator
 
 import util
 from setting import *
@@ -182,15 +182,6 @@ class Article(object):
             pass
         return source_basename
 
-    def getFeedItem(self):
-        return RSS2Gen.RSSItem(
-            title = self.title, 
-            link = self.permalink, 
-            guid = RSS2Gen.Guid(self.permalink),
-            description = self.summary,
-            pubDate = self.date,
-            #categories = tags, 
-            )
     def getCustomData(self, key):
         return self.custom.get(key, '')
 
@@ -444,6 +435,21 @@ class Feed(ArticleBundle):
         else:
             articles = self.articles[0:]
 
+        feed = feedgenerator.Atom1Feed( title = self.site.siteTitle,
+                                        link = self.site.siteUrl,
+                                        feed_url = self.site.feedUrl,
+                                        description = self.site.siteTagline)
+        item_count = 0
+        for article in self.articles:
+            item_count += 1
+            feed.add_item(  title = article.title,
+                            link = article.permalink,
+                            description = article.summary,
+                            pubdate = article.date)
+            if item_count >= self.site.numInFeed:
+                break
+        
+        '''
         feed = RSS2Gen.RSS2(
             title = self.site.siteTitle,
             link = self.site.siteUrl,
@@ -452,10 +458,10 @@ class Feed(ArticleBundle):
             items = [ a.getFeedItem() for a in articles ],
             generator = util.self()
             )
-
+        '''
         filename = self.site.generateDeployFilePath(self.site.feedFilename, assign=True)
         with open(filename, 'w') as fp:
-                feed.write_xml(fp, 'utf-8')
+                feed.write(fp, 'utf-8')
 
 class Tags(ArticleBundle):
     """标签"""

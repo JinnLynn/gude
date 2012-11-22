@@ -252,7 +252,7 @@ class Site:
 
     @property
     def feedFilename(self):
-        return self.config.get('feed_filename', 'feed.rss')
+        return self.config.get('feed_filename', 'atom.xml')
 
     # 每页文章数
     @property
@@ -265,6 +265,7 @@ class Site:
         return self.config.get('num_in_archive', 50)
 
     # Feed输出的文章数量
+    @property
     def numInFeed(self):
         return self.config.get('num_in_feed', 10)
 
@@ -304,12 +305,10 @@ class Site:
         if subdir:
             subdir += '/'
         return '%s/%s' %(domain, subdir)
-        pass
 
     @property
     def feedUrl(self):
         return self.siteUrl + self.feedFilename.lstrip('/')
-        pass
 
     @property
     def siteTitle(self):
@@ -318,7 +317,6 @@ class Site:
     @property
     def siteTagline(self):
         return self.config.get('tagline', '')
-        pass
 
     @property
     def siteCategories(self):
@@ -452,7 +450,7 @@ class Gude(Application):
         abspath = os.path.join(self.site.articlePath, args.dirname, filename)
         if not args.layout:
             args.layout = self.site.defaultLayout
-        
+        args.title = args.title.decode('utf-8')
         header = ARTICLE_TEMPLATE % (args.layout, args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         util.writeToFile(abspath, header)
         print "article '%s' created." % self.site.getRelativePath(abspath)
