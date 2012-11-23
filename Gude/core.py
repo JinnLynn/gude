@@ -203,9 +203,13 @@ class Site:
     def getUrl(self, filepath):
         return self.siteUrl + filepath.lstrip('/')
 
-    def getAsset(self, filepath):
+    def getAsset(self, filepath, buf={}):
+        # 通过原始文件的修改时间获得时间戳
+        org_filepath = os.path.join(self.assetsPath, filepath)
+        file_hash = buf[org_filepath] if org_filepath in buf.keys() else util.fileHash( org_filepath )
+        buf[org_filepath] = file_hash
         filepath = os.path.join('assets', filepath)
-        return self.siteUrl + filepath # + '?' + util.hash()
+        return self.siteUrl + filepath + '?' + file_hash[-5:]
 
     def getPathInSite(self, filename):
         return os.path.join(SITE_PATH, filename)

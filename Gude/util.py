@@ -5,9 +5,7 @@ import time
 
 from markdown import markdown as MarkdownConvert
 
-import setting
-from setting import DEV_MODE
-from setting import SITE_PATH
+from setting import *
 
 # 标准化字典键名
 stdKey = lambda s: re.sub('[- ]+', '_', s.lower())
@@ -28,10 +26,8 @@ utcNow = lambda: '%s UTC' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 # 时间戳
 timestamp = lambda d = None: int( time.time() if not isinstance(d, datetime) else time.mktime(d.timetuple()) )
 
-# hash
-hash = lambda : '%d' % timestamp()
-
-
+# 文件hash
+fileHash = lambda f: '%d' % ( 0 if not os.path.isfile(f) else int (os.stat(f).st_mtime) )
 
 # 文件写入
 #writeToFile = lambda f, c: with codecs.open(f, 'w', encoding='utf-8') as fp: ( fp.write(c) )
@@ -68,7 +64,3 @@ def log(msg):
 def getRelativePath(abspath):
     assert abspath.find(SITE_PATH) == 0, 'path error. %s' % abspath
     return abspath[len(SITE_PATH)+1:]
-
-def self():
-    return 'Gude %s' % setting.VERSION
-    pass
