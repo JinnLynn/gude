@@ -66,7 +66,7 @@ class Article(object):
             print "date out: [%s] %s" %  (str(self.date), self.site.getRelativePath(self.source))
             return False
 
-        self.unique = util.timestamp(self.date)
+        self.unique = ('%d' % util.timestamp(self.date))[-5:]
 
         # 解析分类
         self.parseCategory()
@@ -197,9 +197,10 @@ class Article(object):
             content = util.markdown(content)
         filters = self.site.contentFilter;
         for f in filters:
+            #if True:
             try:
                 mod = __import__(f)
-                content = getattr(mod, 'parse')(content, site=self.site, article=self)
+                content = getattr(mod, 'parse')(content, gude_site=self.site, gude_article=self)
             except:
                 print 'content filter fail: %s' % f
         return content

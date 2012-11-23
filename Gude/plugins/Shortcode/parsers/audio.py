@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import urllib, random
-def parse(site, kwargs):
-    src = kwargs.get('src')
+
+def parse(args):
+    src = args.get('src')
+    site = args.get('gude_site')
+    rand = args.get('gude_unique')
     if not src:
         return 'ERROR: audio shortcode'
-    rand = '%d' % random.uniform(1000, 100000000000)
-    playr_url = site.getUrl('assets/audioplayer.swf')
+    playr_url = site.getAsset('audioplayer.swf')
     return ('<object type="application/x-shockwave-flash" data="' + playr_url+ '" width="290" height="24" id="audioplayer' + rand + '">'
         + '<param name="movie" value="' + playr_url + '" />'
         + '<param name="FlashVars" value="playerID=' + rand + '&amp;bg=0xCDDFF3&amp;leftbg=0x357DCE&amp;lefticon=0xF2F2F2&amp;rightbg=0x357DCE'

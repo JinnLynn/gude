@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import re
+import re, time, random
 
 """
 内容过滤器 支持形如 [btn url=""] 的短标签
@@ -11,6 +11,12 @@ def parse(content, **kwargs):
     groups = ex.findall(content)
     pieces = {}
     parsed = content
+
+    count = 0
+    try:
+        unique = kwargs.get('gude_article', None).unique
+    except Exception, e:
+        unique = '%d' % random.uniform(10000, 99999)
 
     for item in groups:
         if ' ' in item:
@@ -25,13 +31,19 @@ def parse(content, **kwargs):
             name = item
             args = {}
 
-        item = re.escape(item)
         #if True:
         try:
             mod = import_parser('Shortcode.parsers.' + str(name).decode('utf-8'))
             function = getattr(mod, 'parse')
-            result = function(site, args)
-            parsed = re.sub(r'\[' + item + r'\]', result, parsed)
+
+            # 获得一个唯一标示码
+            count += 1
+            args.update({'gude_unique': '%s%02d' % (unique, count)})
+
+            args.update(kwargs)
+            
+            result = function(args)
+            parsed = re.sub(r'\[' + re.escape(item) + r'\]', result, parsed)
         except:
             pass
 

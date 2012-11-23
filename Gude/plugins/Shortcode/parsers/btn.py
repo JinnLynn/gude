@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-def parse(site, kwargs):
+def parse(args):
     # [btn url="URL_1,URL_2", title="TITTLE_1,TITLE_2", center="1"]
     style_to_class = {'large': 'btn-large', 'primary': 'btn-primary'};
 
-    urls = kwargs.get('url', '').split(',')
-    titles = kwargs.get('title', '').split(',')
-    styles = kwargs.get('style', '').split(',')
-    icons = kwargs.get('icon', '').split(',')
-    is_center = False if str(kwargs.get('center', '1')) == '0' else True
+    urls = args.get('url', '').split(',')
+    titles = args.get('title', '').split(',')
+    styles = args.get('style', '').split(',')
+    icons = args.get('icon', '').split(',')
+    is_center = False if str(args.get('center', '1')) == '0' else True
     
     if len(urls)==0 or len(titles)==0 or len(urls) != len(titles):
         return 'ERROR: btn shortcode'
