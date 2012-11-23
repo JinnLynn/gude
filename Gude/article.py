@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys, os, codecs
 from datetime import datetime
+import time
 
 import yaml
 import feedgenerator
@@ -65,7 +66,7 @@ class Article(object):
             print "date out: [%s] %s" %  (str(self.date), self.site.getRelativePath(self.source))
             return False
 
-        self.unique = self.date.strftime('%Y%m%d%H%M%S')
+        self.unique = util.timestamp(self.date)
 
         # 解析分类
         self.parseCategory()

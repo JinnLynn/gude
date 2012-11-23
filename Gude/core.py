@@ -201,8 +201,11 @@ class Site:
         return os.path.join(deploy_file_path, 'index.html')
 
     def getUrl(self, filepath):
-        filepath.lstrip('/')
         return self.siteUrl + filepath.lstrip('/')
+
+    def getAsset(self, filepath):
+        filepath = os.path.join('assets', filepath)
+        return self.siteUrl + filepath # + '?' + util.hash()
 
     def getPathInSite(self, filename):
         return os.path.join(SITE_PATH, filename)
