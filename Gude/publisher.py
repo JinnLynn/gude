@@ -22,6 +22,7 @@ class Publisher(object):
         pub_type = self.getPublishType()
         if pub_type == PT_GIT or pub_type == PT_GITFTP:
             self.forceInitGitRepo()
+        self.publish(force=True)
 
     def publish(self, **kwargs):
         pub_type = self.getPublishType()
