@@ -5,7 +5,10 @@ import os
 DEV_MODE = True
 
 # 版本
-VERSION = '0.1'
+VERSION = '0.2'
+
+# 自我介绍
+SELF_INTRODUCTION = 'Gude v%s' % VERSION
 
 # 默认测试服务器端口
 DEFAULT_SERVER_PORT = 8910
