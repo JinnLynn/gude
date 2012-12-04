@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import sys, os, codecs
+import sys, os, codecs, time
 from datetime import datetime
-import time
 
-import yaml
-import feedgenerator
+import yaml, feedgenerator
 
 import util
 from setting import *
@@ -22,6 +20,8 @@ class Article(object):
         self.author = self.site.siteAuthor
         self.tag = []
         self.category = []
+        self.custom = {}
+        self.listed = True
 
         self.content = ''
         self.summary = ''
@@ -55,6 +55,7 @@ class Article(object):
         self.tag        = config.get('tag', [])
         self.category   = config.get('category', [])
         self.custom     = config.get('custom', {})
+        self.listed     = config.get('listed', True)
 
         # 检查date
         if not self.checkDateAvailable():
@@ -65,6 +66,10 @@ class Article(object):
         if self.date > datetime.now():
             print "date out: [%s] %s" %  (str(self.date), self.site.getRelativePath(self.source))
             return False
+
+        # 不列出的文章
+        if not self.listed:
+            print "no listed: '%s'" % self.site.getRelativePath(self.source)
 
         self.unique = ('%d' % util.timestamp(self.date))[-5:]
 
@@ -266,9 +271,14 @@ class ArticleBundle(object):
     """文章集合
     有多篇文章集合的处理  存档 首页 分类 标签
     """
-    def __init__(self, site):
+    def __init__(self, site, articles):
         self.site = site
         self.articles = []
+        for article in articles:
+            if not article.listed:
+                continue
+            self.articles.append(article)
+        
 
     def addArticle(self, article):
         if not isinstance (article, Article):
@@ -353,8 +363,7 @@ class ArticleBundle(object):
 class Archives(ArticleBundle):
     """ 存档 存档页 文章单页的输出 """
     def __init__(self, site, articles):
-        super(Archives, self).__init__(site)
-        self.articles = articles
+        super(Archives, self).__init__(site, articles)
 
     def printSelf(self):
         print 'Archives:'
@@ -374,8 +383,7 @@ class Archives(ArticleBundle):
 class Home(ArticleBundle):
     """ 首页的输出 """
     def __init__(self, site, articles):
-        super(Home, self).__init__(site)
-        self.articles = articles
+        super(Home, self).__init__(site, articles)
 
     def printSelf(self):
         print 'Home: %s' % self.permalink
@@ -387,7 +395,7 @@ class Home(ArticleBundle):
 class Category(ArticleBundle):
     """ 分类 """
     def __init__(self, site, category):
-        super(Category, self).__init__(site)
+        super(Category, self).__init__(site, [])
         self.name = category
 
     def printSelf(self):
@@ -406,7 +414,7 @@ class Tag(ArticleBundle):
     标签页的输出
     """
     def __init__(self, site, tag):
-        super(Tag, self).__init__(site)
+        super(Tag, self).__init__(site, [])
         self.name = tag
 
     def printSelf(self):
@@ -423,8 +431,7 @@ class Tag(ArticleBundle):
 class Feed(ArticleBundle):
     """ Feed的输出 """
     def __init__(self, site, articles):
-        super(Feed, self).__init__(site)
-        self.articles = articles
+        super(Feed, self).__init__(site, articles)
 
     # 忽略输出方法
     def export(self):
@@ -468,8 +475,7 @@ class Feed(ArticleBundle):
 class Tags(ArticleBundle):
     """标签"""
     def __init__(self, site, articles):
-        self.site = site
-        self.articles = articles
+        super(Tags, self).__init__(site, articles)
         self.tags = self.fetchAllTags()
 
     def fetchAllTags(self):
@@ -519,8 +525,7 @@ class Tags(ArticleBundle):
 class Categories(ArticleBundle):
     """分类"""
     def __init__(self, site, articles):
-        super(Categories, self).__init__(site)
-        self.articles = articles
+        super(Categories, self).__init__(site, articles)
         self.categories = self.fetchAllCategories()
 
 
