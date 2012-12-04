@@ -458,7 +458,7 @@ class Gude(Application):
         if not args.layout:
             args.layout = self.site.defaultLayout
         args.title = args.title.decode('utf-8')
-        header = ARTICLE_TEMPLATE % (args.layout, args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        header = ARTICLE_TEMPLATE % (args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), args.layout)
         util.writeToFile(abspath, header)
         print "article '%s' created." % self.site.getRelativePath(abspath)
 

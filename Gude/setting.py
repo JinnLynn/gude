@@ -88,9 +88,9 @@ ftp_pwd:                'YOUR FTP PASSWORD'
 # 文章相关配置
 # 生成模板
 ARTICLE_TEMPLATE = """---
-layout:     %s
 title:      %s
 date:       %s
+layout:     %s
 category:   []
 tag:        []
 ---
