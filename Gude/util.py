@@ -29,6 +29,8 @@ timestamp = lambda d = None: int( time.time() if not isinstance(d, datetime) els
 # 文件hash
 fileHash = lambda f: '%d' % ( 0 if not os.path.isfile(f) else int (os.stat(f).st_mtime) )
 
+parseTemplateString = lambda t, r: (t % r).strip(' \n\r\t')
+
 # 文件写入
 #writeToFile = lambda f, c: with codecs.open(f, 'w', encoding='utf-8') as fp: ( fp.write(c) )
 def writeToFile(f, c):

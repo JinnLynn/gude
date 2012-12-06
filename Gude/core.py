@@ -376,9 +376,24 @@ class Site:
     def getSiteTrackCode(self):
         track_id = self.config.get('google_analytics_track_id', '')
         if not track_id:
-            return '<!-- google_analytics_track_id unfound. -->'
-        return SITE_TRACK_TEMPLATE % track_id
+            return '<!-- google_analytics_track_id is not configured. -->'
+        return util.parseTemplateString(SITE_TRACK_TEMPLATE, track_id)
 
+    # disqus 评论代码
+    def getDisqusCommentCode(self, permalink = None):
+        disgus_shortname = self.config.get('disgus_shortname', '')
+        if not disgus_shortname:
+            return '<!-- disgus_shortname is not configured. -->'
+        if permalink:
+            disqus_url = "var disqus_url = '%s';" % permalink;
+        return util.parseTemplateString(DISGUS_COMMENT_TEMPLATE, (disgus_shortname, disqus_url))
+
+    # disqus 评论计数代码
+    def getDisqusCommentCountCode(self):
+        disgus_shortname = self.config.get('disgus_shortname', '')
+        if not disgus_shortname:
+            return '<!-- disgus_shortname is not configured. -->'
+        return util.parseTemplateString(DISGUS_COMMENT_COUNT_TEMPLATE, disgus_shortname)
 
 class Gude(Application):
     ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
