@@ -210,6 +210,10 @@ class Article(object):
                 print 'content filter fail: %s' % f
         return content
 
+    def exportSitemap(self):
+        if self.listed:
+            self.site.sitemap.addUrl(self.permalink, lastmod = self.date)
+
 # 被指定生成文件的日志
 class DesignatedArticle(Article):
     def __init__(self, site, source, designated):
@@ -360,6 +364,15 @@ class ArticleBundle(object):
                 paged.append( self.articles[start:end] )
         return paged
 
+    def exportSitemap(self):
+        # 根据页面中最新日志获得更新时间
+        lastmod = None
+        for a in self.articles:
+            if not lastmod or lastmod < a.date:
+                lastmod = a.date
+        for i in xrange(1, self.totalPageNum + 1):
+            self.site.sitemap.addUrl(self.getPagePermalink(i), lastmod = lastmod)
+
 class Archives(ArticleBundle):
     """ 存档 存档页 文章单页的输出 """
     def __init__(self, site, articles):
@@ -391,6 +404,11 @@ class Home(ArticleBundle):
     @property
     def templateName(self):
         return 'home'
+
+    def exportSitemap(self):
+        # 更新时间永远是站点导出时间
+        for i in xrange(1, self.totalPageNum + 1):
+            self.site.sitemap.addUrl(self.getPagePermalink(i))
 
 class Category(ArticleBundle):
     """ 分类 """
@@ -522,6 +540,9 @@ class Tags(ArticleBundle):
     def templateName(self):
         return 'tags'
 
+    def exportSitemap(self):
+        map(lambda t: t.exportSitemap(), self.tags)
+
 class Categories(ArticleBundle):
     """分类"""
     def __init__(self, site, articles):
@@ -557,4 +578,35 @@ class Categories(ArticleBundle):
     def count(self):
         return len(self.categories)
 
-        
+    def exportSitemap(self):
+        map(lambda c: c.exportSitemap(), self.categories)
+
+class Sitemap(object):
+    def __init__(self):
+        self.urls = []
+
+    def addUrl(self, loc, lastmod = None, changefreq = 'monthly', priority = '0.5'):
+        if not loc:
+            return
+        if not isinstance(lastmod, datetime):
+            lastmod = datetime.now()
+        lastmod = lastmod.strftime('%Y-%m-%d')
+        tpl = """
+    <url>
+        <loc>%s</loc>
+        <lastmod>%s</lastmod>
+    </url>
+    """
+        url = util.parseTemplateString(tpl, (loc, lastmod))
+        self.urls.append(url)
+
+    def export(self):
+        tpl = """
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+%s
+</urlset> 
+        """
+        return util.parseTemplateString(tpl, '\n'.join(unicode(s) for s in self.urls if s))
