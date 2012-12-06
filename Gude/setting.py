@@ -47,6 +47,13 @@ num_in_archive:         50
 
 default_layout:         'post'
 
+# 头部菜单 默认已包括首页 Home
+header_menu:
+    - 'title':          'Tags'
+      'url':            'HTTP://YOURDOMAIN.COM/tags/'
+    - 'title':          'Archives'
+      'url':            'HTTP://YOURDOMAIN.COM/archives/'
+
 # 外部服务设置
 disgus_shortname:           'YOUR DISGUS SHORTNAME'
 google_analytics_track_id:  'YOUR GOOGLE ANALYTICS TRACK ID'

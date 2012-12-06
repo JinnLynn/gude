@@ -408,6 +408,11 @@ class Site:
             return '<!-- disgus_shortname is not configured. -->'
         return util.parseTemplateString(DISGUS_COMMENT_COUNT_TEMPLATE, disgus_shortname)
 
+    def getHeaderMenu(self):
+        menus = [{'title': 'Home', 'url': self.siteUrl}]
+        menus.extend( self.config.get('header_menu', []) )
+        return menus
+
 class Gude(Application):
     ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
 
