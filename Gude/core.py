@@ -111,6 +111,8 @@ class Site:
         # 拷贝文件
         self.copyFiles()
 
+        print '\nSite build success.\n'
+
     def exportArticles(self):
         print 'Article:'
         map(lambda a: a.export(), self.articles)
@@ -353,6 +355,10 @@ class Site:
     @property
     def isGitHubProjectPage(self):
         return self.config.get('github_project_page', False)
+
+    @property
+    def googleSearchSiteDomain(self):
+        return re.sub('^.*://+', '', self.siteDomain).strip('/')
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):
