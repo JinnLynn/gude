@@ -47,8 +47,11 @@ num_in_archive:         50
 
 default_layout:         'post'
 
+# 外部服务设置
 disgus_shortname:           'YOUR DISGUS SHORTNAME'
 google_analytics_track_id:  'YOUR GOOGLE ANALYTICS TRACK ID'
+# 如果使用了第三方Feed托管服务，则将其产生的Feed地址配置于此，留空将使用本地默认
+feed_url:                   ''
 
 # 指定生成的文件名 KEY: 相对文章目录 VALUE: 相对发布目录
 #designated:

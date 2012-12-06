@@ -315,7 +315,8 @@ class Site:
 
     @property
     def feedUrl(self):
-        return self.siteUrl + self.feedFilename.lstrip('/')
+        feed_url = self.config.get('feed_url', '').strip()
+        return feed_url if feed_url else self.siteUrl + self.feedFilename.lstrip('/')
 
     @property
     def siteTitle(self):
