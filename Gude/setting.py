@@ -33,7 +33,7 @@ DEFAULT_CONFIG = {
 SITE_INCLUDE_DIR = ['content', 'deploy', 'static', 'theme']
 
 SITE_CONFIG_TEMPLATE= u"""---
-domain:                 'http://YOURDOMAIN.com/'
+domain:                 'HTTP://YOURDOMAIN.COM/'
 subdirectory:           '/'
 theme:                  'default'
 title:                  'YOUR SITE TITLE'
@@ -45,9 +45,10 @@ num_per_page:           5
 num_in_feed:            10
 num_in_archive:         50
 
-disgus_shortname:       'YOUR DISGUS SHORTNAME'
-
 default_layout:         'post'
+
+disgus_shortname:           'YOUR DISGUS SHORTNAME'
+google_analytics_track_id:  'YOUR GOOGLE ANALYTICS TRACK ID'
 
 # 指定生成的文件名 KEY: 相对文章目录 VALUE: 相对发布目录
 #designated:
@@ -155,4 +156,20 @@ README_TEMPLATE = """
 * Completely static output
 
 [Gude]: http://jeeker.net/projects/gude/
+"""
+# 网站统计跟踪代码模板
+SITE_TRACK_TEMPLATE = """
+<div id="stat-code" style="display:none">
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', '%s']);
+        _gaq.push(['_trackPageview']);
+        
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+</div><!-- #stat-code -->
 """

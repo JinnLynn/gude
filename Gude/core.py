@@ -372,6 +372,13 @@ class Site:
             print 'designated: %s => %s' % (source, dist)
         return dist
 
+    # 网站跟踪代码 使用Google Analytics
+    def getSiteTrackCode(self):
+        track_id = self.config.get('google_analytics_track_id', '')
+        if not track_id:
+            return '<!-- google_analytics_track_id unfound. -->'
+        return SITE_TRACK_TEMPLATE % track_id
+
 
 class Gude(Application):
     ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
