@@ -82,9 +82,9 @@ git_remote:             'YOUR GITHUB REPO URL'
 # 为避免在使用GIT时提交本配置文件时泄露FTP信息，FTP服务器的配置在 ftp-config.yaml
 # 其键值为ftp_server、 ftp_usr、 ftp_pwd
 
-# 开发模式
-dev_domain:             'http://localhost:8910'
-dev_subdirectory:       '/'
+# 本地模式
+local_domain:           'http://localhost:8910'
+local_subdirectory:     '/'
 ...
 """
 

@@ -59,8 +59,8 @@ class Article(object):
         self.listed     = config.get('listed', True)
         self.draft      = config.get('draft', False)
 
-        # 草稿 且 不是开发模式
-        if self.draft and not self.site.isDevelopMode:
+        # 草稿 且 不是本地模式
+        if self.draft and not self.site.isLocalMode:
             print "draft: '%s'" % self.site.getRelativePath(self.source)
             return False
 

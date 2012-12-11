@@ -16,7 +16,7 @@ class Site:
     def __init__(self):
         # 配置
         self.config = DEFAULT_CONFIG
-        self.isDevelopMode = False
+        self.isLocalMode = False
 
         try:
             config_file = os.path.join(SITE_PATH, DEFAULT_CONFIG_FILE)
@@ -304,21 +304,22 @@ class Site:
     @property
     def siteDomain(self):
         default = 'http://localhost/'
-        domain = self.config.get('domain', default) if not self.isDevelopMode else self.config.get('dev_domain', default)
+        domain = self.config.get('domain', default) if not self.isLocalMode else self.config.get('local_domain', default)
         return '%s/' % domain.strip(' /')
         
     @property
     def siteUrl(self):
-        return self.productionEnvSiteUrl if not self.isDevelopMode else self.developEnvSiteUrl
+        return self.productionEnvSiteUrl if not self.isLocalMode else self.localEnvSiteUrl
 
     # 生产环境下的网站地址
     @property
     def productionEnvSiteUrl(self):
         return self.getSiteUrl_('domain', 'subdirectory')
 
+    # 本地环境下的网站地址
     @property
-    def developEnvSiteUrl(self):
-        return self.getSiteUrl_('dev_domain', 'dev_subdirectory')
+    def localEnvSiteUrl(self):
+        return self.getSiteUrl_('local_domain', 'local_subdirectory')
 
     def getSiteUrl_(self, domain_key, sub_dir_key):
         domain = self.config.get(domain_key, 'http://localhost/').strip(' /')
@@ -471,9 +472,9 @@ class Gude(Application):
     @subcommand('build', help='build a new site.')
     @true('-f', default=False, dest='overwrite')
     @true('-p', '--preview', default=False, dest='preview', help='start webserver after builded.')
-    @true('-d', '--devmode', default=False, dest='devmode', help='build in develop mode')
+    @true('-l', '--local', default=False, dest='localmode', help='build in local mode')
     def build(self, args): 
-        self.site.isDevelopMode = args.devmode
+        self.site.isLocalMode = args.localmode
         self.site.checkDir()
         self.startBuild()
         if args.preview:
