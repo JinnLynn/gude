@@ -170,7 +170,8 @@ class Site:
                 if os.path.isfile(from_file):
                     shutil.copy(from_file, to_file)
                 elif os.path.isdir(from_file):
-                    shutil.copytree(from_file, to_file)
+                    to_file_dir = os.path.join(to_file, os.path.basename(from_file))
+                    shutil.copytree(from_file, to_file_dir)
                 print print_info(from_file, self.getRelativePath(to_file))
         
 
