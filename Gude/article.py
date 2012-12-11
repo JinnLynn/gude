@@ -7,6 +7,10 @@ import yaml, feedgenerator
 import util
 from setting import *
 
+# unlisted 可选关键词
+# 首页包括标签与分类页  Sitemap   存档页      Feed
+# home               sitemap   archives   feed
+
 """ 单篇文章 """
 class Article(object):
     
@@ -21,7 +25,7 @@ class Article(object):
         self.tag = []
         self.category = []
         self.custom = {}
-        self.listed = True
+        self.unlisted = []
         self.draft = False
 
         self.content = ''
@@ -56,7 +60,7 @@ class Article(object):
         self.tag        = config.get('tag', [])
         self.category   = config.get('category', [])
         self.custom     = config.get('custom', {})
-        self.listed     = config.get('listed', True)
+        self.unlisted   = config.get('unlisted', [])
         self.draft      = config.get('draft', False)
 
         # 草稿 且 不是本地模式
@@ -75,8 +79,8 @@ class Article(object):
             return False
 
         # 不列出的文章
-        if not self.listed:
-            print "no listed: '%s'" % self.site.getRelativePath(self.source)
+        if len(self.unlisted):
+            print "unlisted in [%s]: '%s'" % (', '.join(unicode("'" + s + "'") for s in self.unlisted if s), self.site.getRelativePath(self.source) )
 
         self.unique = ('%d' % util.timestamp(self.date))[-5:]
 
@@ -222,8 +226,11 @@ class Article(object):
         return content
 
     def exportSitemap(self):
-        if self.listed:
+        if self.isListed('sitemap'):
             self.site.sitemap.addUrl(self.permalink, lastmod = self.date)
+
+    def isListed(self, key):
+        return False if key in self.unlisted else True
 
 # 被指定生成文件的日志
 class DesignatedArticle(Article):
@@ -288,12 +295,7 @@ class ArticleBundle(object):
     """
     def __init__(self, site, articles):
         self.site = site
-        self.articles = []
-        for article in articles:
-            if not article.listed:
-                continue
-            self.articles.append(article)
-        
+        self.articles = articles
 
     def addArticle(self, article):
         if not isinstance (article, Article):
@@ -384,10 +386,14 @@ class ArticleBundle(object):
         for i in xrange(1, self.totalPageNum + 1):
             self.site.sitemap.addUrl(self.getPagePermalink(i), lastmod = lastmod)
 
+    def cleanUnListed(self, key):
+        self.articles = filter(lambda a: a.isListed(key), self.articles)
+
 class Archives(ArticleBundle):
     """ 存档 存档页 文章单页的输出 """
     def __init__(self, site, articles):
         super(Archives, self).__init__(site, articles)
+        self.cleanUnListed('archives')
 
     def printSelf(self):
         print 'Archives:'
@@ -408,6 +414,7 @@ class Home(ArticleBundle):
     """ 首页的输出 """
     def __init__(self, site, articles):
         super(Home, self).__init__(site, articles)
+        self.cleanUnListed('home')
 
     def printSelf(self):
         print 'Home: %s' % self.permalink
@@ -421,46 +428,11 @@ class Home(ArticleBundle):
         for i in xrange(1, self.totalPageNum + 1):
             self.site.sitemap.addUrl(self.getPagePermalink(i))
 
-class Category(ArticleBundle):
-    """ 分类 """
-    def __init__(self, site, category):
-        super(Category, self).__init__(site, [])
-        self.name = category
-
-    def printSelf(self):
-        print 'Category: %s %d %s' % (self.name, self.count, self.permalink)
-
-    @property
-    def templateName(self):
-        return 'category'
-
-    @property
-    def exportDir(self):
-        return 'category/%s' % self.name
-
-class Tag(ArticleBundle):
-    """标签 
-    标签页的输出
-    """
-    def __init__(self, site, tag):
-        super(Tag, self).__init__(site, [])
-        self.name = tag
-
-    def printSelf(self):
-        print 'Tag: %s %d %s' % (self.name, self.count, self.permalink)
-
-    @property
-    def templateName(self):
-        return 'tag'
-
-    @property
-    def exportDir(self):
-        return 'tag/%s' % self.name
-
 class Feed(ArticleBundle):
     """ Feed的输出 """
     def __init__(self, site, articles):
         super(Feed, self).__init__(site, articles)
+        self.cleanUnListed('feed')
 
     # 忽略输出方法
     def export(self):
@@ -505,6 +477,7 @@ class Tags(ArticleBundle):
     """标签"""
     def __init__(self, site, articles):
         super(Tags, self).__init__(site, articles)
+        self.cleanUnListed('home')
         self.tags = self.fetchAllTags()
 
     def fetchAllTags(self):
@@ -554,10 +527,30 @@ class Tags(ArticleBundle):
     def exportSitemap(self):
         map(lambda t: t.exportSitemap(), self.tags)
 
+class Tag(ArticleBundle):
+    """标签 
+    标签页的输出
+    """
+    def __init__(self, site, tag):
+        super(Tag, self).__init__(site, [])
+        self.name = tag
+
+    def printSelf(self):
+        print 'Tag: %s %d %s' % (self.name, self.count, self.permalink)
+
+    @property
+    def templateName(self):
+        return 'tag'
+
+    @property
+    def exportDir(self):
+        return 'tag/%s' % self.name
+
 class Categories(ArticleBundle):
     """分类"""
     def __init__(self, site, articles):
         super(Categories, self).__init__(site, articles)
+        self.cleanUnListed('home')
         self.categories = self.fetchAllCategories()
 
 
@@ -591,6 +584,23 @@ class Categories(ArticleBundle):
 
     def exportSitemap(self):
         map(lambda c: c.exportSitemap(), self.categories)
+
+class Category(ArticleBundle):
+    """ 分类 """
+    def __init__(self, site, category):
+        super(Category, self).__init__(site, [])
+        self.name = category
+
+    def printSelf(self):
+        print 'Category: %s %d %s' % (self.name, self.count, self.permalink)
+
+    @property
+    def templateName(self):
+        return 'category'
+
+    @property
+    def exportDir(self):
+        return 'category/%s' % self.name
 
 class Sitemap(object):
     def __init__(self):
