@@ -22,6 +22,7 @@ class Article(object):
         self.category = []
         self.custom = {}
         self.listed = True
+        self.draft = False
 
         self.content = ''
         self.summary = ''
@@ -56,6 +57,12 @@ class Article(object):
         self.category   = config.get('category', [])
         self.custom     = config.get('custom', {})
         self.listed     = config.get('listed', True)
+        self.draft      = config.get('draft', False)
+
+        # 草稿 且 不是开发模式
+        if self.draft and not self.site.isDevelopMode:
+            print "draft: '%s'" % self.site.getRelativePath(self.source)
+            return False
 
         # 检查date
         if not self.checkDateAvailable():
@@ -97,6 +104,10 @@ class Article(object):
         
         self.content = self.contentFilter(self.content)
         self.summary = self.contentFilter(self.summary) if self.summary else self.content
+
+        # 草稿 标题加前缀
+        if self.draft:
+            self.title = '__DRAFT__ ' + self.title
 
         return True
 
@@ -143,7 +154,7 @@ class Article(object):
                 tag.append(tag_obj)
         self.tag = tag
 
-    def export(self):    
+    def export(self):
         print '  %s' % self.site.getRelativePath(self.source)
         data = {'site': self.site, 'article': self}
         self.site.exportFile(self.exportFilePath, self.layout, data)
