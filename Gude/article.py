@@ -18,21 +18,21 @@ class Article(object):
         self.site = site
         self.source = source
 
-        self.layout = 'post'
-        self.title = 'untitled'
-        self.date = None
-        self.modify = util.fileModifyDate(self.source)
-        self.author = self.site.siteAuthor
-        self.tag = []
-        self.category = []
-        self.custom = {}
-        self.unlisted = []
-        self.draft = False
+        # 文章配置的默认值
+        self.layout     = self.site.defaultLayout
+        self.title      = 'untitled'
+        self.date       = datetime.now()
+        self.modify     = util.fileModifyDate(self.source)
+        self.author     = self.site.siteAuthor
+        self.tag        = []
+        self.category   = []
+        self.custom     = {}
+        self.unlisted   = []
+        self.draft      = False
 
         self.content = ''
         self.summary = ''
 
-        self.metadata = {}
         self.unique = ''
 
     def parse(self):
@@ -54,16 +54,16 @@ class Article(object):
             config_str += line
         config.update( yaml.load(config_str) )
         
-        self.layout     = config.get('layout', self.site.defaultLayout)
-        self.title      = config.get('title', 'untitled')
-        self.author     = config.get('author', self.site.siteAuthor)
-        self.date       = config.get('date', None)
-        self.modify     = config.get('modify', self.modify)
-        self.tag        = config.get('tag', [])
-        self.category   = config.get('category', [])
-        self.custom     = config.get('custom', {})
-        self.unlisted   = config.get('unlisted', [])
-        self.draft      = config.get('draft', False)
+        self.layout     = config.get('layout',      self.layout)
+        self.title      = config.get('title',       self.title)
+        self.author     = config.get('author',      self.author)
+        self.date       = config.get('date',        self.date)
+        self.modify     = config.get('modify',      self.modify)
+        self.tag        = config.get('tag',         self.tag)
+        self.category   = config.get('category',    self.category)
+        self.custom     = config.get('custom',      self.custom)
+        self.unlisted   = config.get('unlisted',    self.unlisted)
+        self.draft      = config.get('draft',       self.draft)
 
         # 检查修改时间
         if self.modify < self.date:
@@ -88,9 +88,10 @@ class Article(object):
         if len(self.unlisted):
             print "unlisted in [%s]: '%s'" % (', '.join(unicode("'" + s + "'") for s in self.unlisted if s), self.site.getRelativePath(self.source) )
 
+        # 唯一标识码 发布时间时间戳的后5位
         self.unique = ('%d' % util.timestamp(self.date))[-5:]
 
-        # 解析分类
+        # 解析分类 标签
         self.parseCategory()
         self.parseTag()
         
