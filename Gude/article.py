@@ -21,6 +21,7 @@ class Article(object):
         self.layout = 'post'
         self.title = 'untitled'
         self.date = None
+        self.modify = util.fileModifyDate(self.source)
         self.author = self.site.siteAuthor
         self.tag = []
         self.category = []
@@ -57,11 +58,16 @@ class Article(object):
         self.title      = config.get('title', 'untitled')
         self.author     = config.get('author', self.site.siteAuthor)
         self.date       = config.get('date', None)
+        self.modify     = config.get('modify', self.modify)
         self.tag        = config.get('tag', [])
         self.category   = config.get('category', [])
         self.custom     = config.get('custom', {})
         self.unlisted   = config.get('unlisted', [])
         self.draft      = config.get('draft', False)
+
+        # 检查修改时间
+        if self.modify < self.date:
+            self.modify = self.date
 
         # 草稿 且 不是本地模式
         if self.draft and not self.site.isLocalMode:
@@ -227,7 +233,7 @@ class Article(object):
 
     def exportSitemap(self):
         if self.isListed('sitemap'):
-            self.site.sitemap.addUrl(self.permalink, lastmod = self.date)
+            self.site.sitemap.addUrl(self.permalink, lastmod = self.modify)
 
     def isListed(self, key):
         return False if key in self.unlisted else True
