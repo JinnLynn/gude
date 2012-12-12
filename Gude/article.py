@@ -610,7 +610,23 @@ class Category(ArticleBundle):
         return 'category/%s' % self.name
 
 class Sitemap(object):
-    def __init__(self):
+    # 模板
+    SM_CONTENT_TPL = """
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+    <!-- %d pages -->
+%s
+</urlset>"""
+    SM_UPL_TPL = """
+    <url>
+        <loc>%s</loc>
+        <lastmod>%s</lastmod>
+    </url>"""
+
+    def __init__(self, site):
+        self.site = site
         self.urls = []
 
     def addUrl(self, loc, lastmod = None, changefreq = 'monthly', priority = '0.5'):
@@ -618,23 +634,16 @@ class Sitemap(object):
             return
         if not isinstance(lastmod, datetime):
             lastmod = datetime.now()
-        lastmod = lastmod.strftime('%Y-%m-%d')
-        tpl = """
-    <url>
-        <loc>%s</loc>
-        <lastmod>%s</lastmod>
-    </url>
-    """
-        url = util.parseTemplateString(tpl, (loc, lastmod))
+        lastmod = lastmod.strftime('%Y-%m-%dT%X')
+        url = util.parseTemplateString(self.SM_UPL_TPL, (loc, lastmod))
         self.urls.append(url)
 
     def export(self):
-        tpl = """
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-%s
-</urlset> 
-        """
-        return util.parseTemplateString(tpl, '\n'.join(unicode(s) for s in self.urls if s))
+        page_count = len(self.urls)
+        url_str = '\n'.join(unicode(s) for s in self.urls if s)
+        content = util.parseTemplateString(self.SM_CONTENT_TPL, (page_count, url_str))
+        print 'Sitemap:'
+        export_file = self.site.generateDeployFilePath('sitemap.xml', assign=True)
+        with open(export_file, 'w') as fp:
+            fp.write(content)
+        print "    => %s" % self.site.getRelativePath(export_file) 

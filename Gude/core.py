@@ -29,7 +29,7 @@ class Site:
         
         self.articles = []
         self.lookup = None
-        self.sitemap = Sitemap()
+        self.sitemap = Sitemap(self)
 
     def checkDir(self):
         if not os.path.exists(DEFAULT_CONFIG_FILE):
@@ -106,7 +106,7 @@ class Site:
         # 输出Sitemap
         map(lambda a: a.exportSitemap(), self.articles)
         map(lambda s: s.exportSitemap(), [home, archives, categories, tags])
-        self.exportSitemap()
+        self.sitemap.export()
 
         # 拷贝文件
         self.copyFiles()
@@ -121,14 +121,7 @@ class Site:
         print '404:'
         deploy_file = self.generateDeployFilePath('404.html', assign=True)
         data = {'site': self}
-        self.exportFile(deploy_file, '404', data)
-
-    def exportSitemap(self):
-        print 'Sitemap:'
-        export_file = self.generateDeployFilePath('sitemap.xml', assign=True)
-        with open(export_file, 'w') as fp:
-            fp.write(self.sitemap.export())
-        print "    => %s" % self.getRelativePath(export_file)        
+        self.exportFile(deploy_file, '404', data)       
 
     def exportFile(self, export_file, template_name, data):
         util.tryMakeDirForFile(export_file)
