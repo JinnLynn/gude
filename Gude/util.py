@@ -3,7 +3,7 @@ import sys, os, re, urllib, codecs, logging
 from datetime import datetime
 import time
 
-from markdown import markdown as MarkdownConvert
+import markdown2
 
 from setting import *
 
@@ -18,7 +18,7 @@ cleanSlash = lambda s: re.sub('//+', '/', s)
 # 标准化路径： 联系多个'-'转为一个 空格转为 '-'
 standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
 
-markdown = lambda s: MarkdownConvert(s, ['fenced_code']) 
+markdown = lambda s: markdown2.markdown(s, extras=['footnotes', 'toc', 'fenced-code-blocks', 'cuddled-lists'])
 
 # UTC时间字符串
 utcNow = lambda: '%s UTC' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
