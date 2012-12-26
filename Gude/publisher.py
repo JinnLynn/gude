@@ -60,23 +60,10 @@ class Publisher(object):
         print 'publish [%s %s] %s.' % (remote, self.publishBranch, 'success' if ret == 0 else 'fail')
 
     def publishByGitFtp(self, force=False):
-        config_file = os.path.join(SITE_PATH, DEFAULT_FTP_CONFIG_FILE)
-        if not os.path.isfile(config_file):
-            print 'FTP config [%s] is non-existent.' % DEFAULT_FTP_CONFIG_FILE
-            return
-        config = {}
-        try:
-            with open(config_file) as f:
-                for k, v in yaml.load(f).items():
-                    k = util.stdKey(k)
-                    config[k] = v           
-        except:
-            print 'FTP config [%s] parse fail.' % DEFAULT_FTP_CONFIG_FILE
-            return
 
-        server = config.get('ftp_server', '')
-        usr = config.get('ftp_usr', '')
-        pwd = config.get('ftp_pwd', '')
+        server = self.site.config.get('ftp_server', '')
+        usr = self.site.config.get('ftp_usr', '')
+        pwd = self.site.config.get('ftp_pwd', '')
         server_str = '-u "%s" -p "%s" "%s"' % (usr, pwd, server)
         option = ''
         if force:

@@ -19,13 +19,16 @@ class Site:
         self.isLocalMode = False
 
         try:
-            config_file = os.path.join(SITE_PATH, DEFAULT_CONFIG_FILE)
+            config_file = self.getPathInSite(DEFAULT_CONFIG_FILE)
             with open(config_file) as f:
-                for k, v in yaml.load(f).items():
-                    k = util.stdKey(k)
-                    self.config[k] = v           
+                self.config.update( yaml.load(f) )
+
+            privacy_config_file = self.getPathInSite(DEFAULT_PRIVACY_CONFIG_FILE)
+            if os.path.isfile(privacy_config_file):
+                with open(privacy_config_file) as f:
+                    self.config.update( yaml.load(f) )
         except:
-            pass
+            util.logError('site config load fail')
         
         self.articles = []
         self.lookup = None
@@ -270,7 +273,7 @@ class Site:
     # 每页文章数
     @property
     def numPerPage(self):
-        return self.config['num_per_page']
+        return self.config.get('num_per_page', 5)
 
     # 存档页文章数
     @property
@@ -446,7 +449,7 @@ class Gude(Application):
 
         # 写入配置文件
         util.writeToFile(DEFAULT_CONFIG_FILE, SITE_CONFIG_TEMPLATE)
-        util.writeToFile(DEFAULT_FTP_CONFIG_FILE, SITE_FTP_CONFIG_TEMPLATE)
+        util.writeToFile(DEFAULT_PRIVACY_CONFIG_FILE, SITE_PRIVACY_CONFIG_TEMPLATE)
 
         # README
         util.writeToFile('README.md', README_TEMPLATE)
