@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, shutil, re, urllib
+import sys, os, shutil, re, urllib, logging
 from datetime import datetime
 from glob import glob
 
@@ -62,13 +62,13 @@ class Site:
             # 忽略的文件夹 仅关心顶层目录
             i, j = os.path.split(files[0])
             if i == self.articlePath and j in ARTICLE_EXCLUDE_DIR:
-                util.log('exclude dir: %s' % files[0])
+                util.logInfo('exclude dir: %s' % files[0])
                 continue
 
             for fname in files[2]:
                 fname = os.path.join(files[0], fname)
                 if not self.isValidArticleFile(fname):
-                    util.log('invalid article: %s' % fname)
+                    util.logInfo('invalid article: %s' % fname)
                     continue
                 designated = self.getDesignated(fname)
                 article = Article(self, fname) if not designated else DesignatedArticle(self, fname, designated)
@@ -111,14 +111,12 @@ class Site:
         # 拷贝文件
         self.copyFiles()
 
-        print '\nSite build success.\n'
-
     def exportArticles(self):
-        print 'Article:'
+        util.logInfo( 'Article:' )
         map(lambda a: a.export(), self.articles)
 
     def export404(self):
-        print '404:'
+        util.logInfo( '404:' )
         deploy_file = self.generateDeployFilePath('404.html', assign=True)
         data = {'site': self}
         self.exportFile(deploy_file, '404', data)       
@@ -135,14 +133,14 @@ class Site:
         # 编码问题 不能用 util.writeToFile
         with open(export_file, 'w') as fp:
             fp.write(html.encode('utf-8'))
-        print "    => %s" % self.getRelativePath(export_file)
+        util.logInfo( '    => %s', self.getRelativePath(export_file) )
 
     def copyFiles(self): 
         print_info = lambda f,t: '  %s\n    => %s' % (f, t)
-        print '\nCopy Files:'
+        util.logInfo( 'Copy Files:' )
 
         assets_path = self.generateDeployFilePath('assets', assign=True)
-        print print_info('assets', self.getRelativePath(assets_path))
+        util.logInfo( print_info('assets', self.getRelativePath(assets_path)) )
         shutil.copytree(self.assetsPath, assets_path)
 
         files = self.config.get('file_copy', {})
@@ -165,7 +163,7 @@ class Site:
                 elif os.path.isdir(from_file):
                     to_file_dir = os.path.join(to_file, os.path.basename(from_file))
                     shutil.copytree(from_file, to_file_dir)
-                print print_info(from_file, self.getRelativePath(to_file))
+                util.logInfo( print_info(from_file, self.getRelativePath(to_file)) )
         
 
     def testPrint(self):
@@ -382,8 +380,6 @@ class Site:
             return None
         source = self.getRelativePathWithArticle(source)
         dist = designated.get(source, None)
-        if dist:
-            print 'designated: %s => %s' % (source, dist)
         return dist
 
     # 网站跟踪代码 使用Google Analytics
@@ -425,7 +421,7 @@ class Gude(Application):
 
     @command(description='Gude - a simple python static website generator', 
         epilog='Use %(prog)s {command} -h to get help on individual commands')
-    @version('-v', version='%(prog)s ' + VERSION)
+    @version('-v', version='Gude ' + VERSION)
     def main(self, args):
         pass
 
@@ -459,19 +455,24 @@ class Gude(Application):
         if not self.createGitRepo():
             return
 
-        print 'everything is ready.'
+        util.logAlways('everything is ready.')
 
 
     @subcommand('build', help='build a new site.')
     @true('-f', default=False, dest='overwrite')
     @true('-p', '--preview', default=False, dest='preview', help='start webserver after builded.')
     @true('-l', '--local', default=False, dest='localmode', help='build in local mode')
-    def build(self, args): 
+    @true('-i', '--info', default=False, dest='print_info', help='print export info')
+    def build(self, args):
+        util.logAlways('Start building...')
+        if args.print_info:
+            util.logLevelSet(logging.NOTSET)
         self.site.isLocalMode = args.localmode
         self.site.checkDir()
         self.startBuild()
         if args.preview:
             self.startServer(DEFAULT_SERVER_PORT)
+        util.logAlways('Site build success.')
 
     @subcommand('add', help='add new article')
     @store('-t', default='Untitled', dest='title', help='article title')
@@ -483,15 +484,16 @@ class Gude(Application):
         self.site.checkDir()
 
         if not args.filename and not args.title:
-            print 'something error'
+            util.logError( 'something error.' )
             return
 
         if not args.filename:
             args.filename = util.standardizePath(args.title)
         # 检查文件是否存在 文件名相同即有问题 后缀不重要
         if self.isBasenameExists(args.filename, args.dirname):
-            print 'filename is already exists'
+            util.logError( 'filename is already exists.' )
             return
+
         filename = args.filename
         filename += '.html' if args.is_html else '.md' 
         filename = '%s%s' % (datetime.now().strftime(ARTICLE_FILENAME_PREFIX_FORMAT), filename)
@@ -501,7 +503,7 @@ class Gude(Application):
         args.title = args.title.decode('utf-8')
         header = ARTICLE_TEMPLATE % (args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), args.layout)
         util.writeToFile(abspath, header)
-        print "article '%s' created." % self.site.getRelativePath(abspath)
+        util.logAlways( "article '%s' created.", self.site.getRelativePath(abspath) )
 
     @subcommand('serve', help='Serve the website')
     @store('-p', '--port', type=int, default=DEFAULT_SERVER_PORT, dest='port', help='The port where the website must be served from.')
@@ -562,12 +564,12 @@ class Gude(Application):
     def startServer(self, port):
         httpd_ = server.Server(self, port)
         try:
-            print('Webserver [http://localhost:%d] starting...' % port)
+            util.logAlways('Webserver [http://localhost:%d] starting...', port)
             httpd_.serve_forever()
         except KeyboardInterrupt, SystemExit:
-            print('\nReceived shutdown request. Shutting down...')
+            util.logAlways( '\nReceived shutdown request. Shutting down...' )
             httpd_.shutdown()
-            print('Server successfully stopped')
+            util.logAlways('Server successfully stopped')
             exit()
 
     def isBasenameExists(self, basename, dirname):

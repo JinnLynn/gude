@@ -37,7 +37,7 @@ class Article(object):
 
     def parse(self):
         if not os.path.exists(self.source):
-            util.log('file non-existent. [%s]' % self.source)
+            util.logWarning( 'file non-existent. [%s]', self.source )
             return False
 
         fp = codecs.open(self.source, 'r', encoding='utf-8')
@@ -71,22 +71,22 @@ class Article(object):
 
         # 草稿 且 不是本地模式
         if self.draft and not self.site.isLocalMode:
-            print "draft: '%s'" % self.site.getRelativePath(self.source)
+            util.logWarning( "draft: '%s'", self.site.getRelativePath(self.source) )
             return False
 
         # 检查date
         if not self.checkDateAvailable():
-            print "invalid article: date error '%s'" % self.site.getRelativePath(self.source)
+            util.logWarning( "invalid article: date error '%s'", self.site.getRelativePath(self.source) )
             return False
 
         # 时间超出现在的文章
         if self.date > datetime.now():
-            print "date out: [%s] %s" %  (str(self.date), self.site.getRelativePath(self.source))
+            util.logWarning( "date out: [%s] %s", (str(self.date), self.site.getRelativePath(self.source)) )
             return False
 
         # 不列出的文章
         if len(self.unlisted):
-            print "unlisted in [%s]: '%s'" % (', '.join(unicode("'" + s + "'") for s in self.unlisted if s), self.site.getRelativePath(self.source) )
+            util.logInfo( "unlisted in [%s]: '%s'", ', '.join(unicode("'" + s + "'") for s in self.unlisted if s), self.site.getRelativePath(self.source) )
 
         # 唯一标识码 发布时间时间戳的后5位
         self.unique = ('%d' % util.timestamp(self.date))[-5:]
@@ -110,7 +110,7 @@ class Article(object):
         self.summary.strip('\n\t ')
 
         if len(self.content) == 0:  #? 都不会成立，总是会有一个类似换行的东西 又不是\n WHY?
-            print "invalid article: content empty '%s'" % self.site.getRelativePath(self.source)
+            util.logWarning( "invalid article: content empty '%s'", self.site.getRelativePath(self.source) )
             return False
         
         self.content = self.contentFilter(self.content)
@@ -152,9 +152,9 @@ class Article(object):
                     cate_obj = Category(self.site, category)
                     cate.append(cate_obj)
                 else:
-                    print "category: '%s' already exists IN '%s'" % (c, self.site.getRelativePath(self.source))
+                    util.logInfo( "category: '%s' already exists IN '%s'", c, self.site.getRelativePath(self.source) )
             else:
-                print "unavailable category: '%s' IN %s" % (c, self.site.getRelativePath(self.source))
+                util.logWarning( "unavailable category: '%s' IN %s", c, self.site.getRelativePath(self.source) )
         self.category = cate
 
     def parseTag(self):
@@ -166,7 +166,7 @@ class Article(object):
         self.tag = tag
 
     def export(self):
-        print '  %s' % self.site.getRelativePath(self.source)
+        util.logInfo( '  %s' % self.site.getRelativePath(self.source) )
         data = {'site': self.site, 'article': self}
         self.site.exportFile(self.exportFilePath, self.layout, data)
 
@@ -229,7 +229,7 @@ class Article(object):
                 mod = __import__(f)
                 content = getattr(mod, 'parse')(content, gude_site=self.site, gude_article=self)
             except:
-                print 'content filter fail: %s' % f
+                util.logWarning( 'content filter fail: %s', f )
         return content
 
     def exportSitemap(self):
@@ -244,9 +244,10 @@ class DesignatedArticle(Article):
     def __init__(self, site, source, designated):
         super(DesignatedArticle, self).__init__(site, source)
         self.designated = designated
+        util.logInfo( 'designated: %s => %s', source, self.designated )
 
     def export(self):    
-        print '  %s [Designated]' % self.site.getRelativePath(self.source)
+        util.logInfo( '  %s [Designated]' % self.site.getRelativePath(self.source) )
         data = {'site': self.site, 'article': self}
         self.site.exportFile(self.exportFilePath, self.layout, data)
 
@@ -330,7 +331,7 @@ class ArticleBundle(object):
             self.site.exportFile(deploy_file, self.templateName, data)
 
     def printSelf(self):
-        return
+        pass
 
     # 按日期倒序排序
     def sortByDateDESC(self):
@@ -403,7 +404,7 @@ class Archives(ArticleBundle):
         self.cleanUnListed('archives')
 
     def printSelf(self):
-        print 'Archives:'
+        util.logInfo( 'Archives:' )
 
     @property
     def templateName(self):
@@ -424,7 +425,7 @@ class Home(ArticleBundle):
         self.cleanUnListed('home')
 
     def printSelf(self):
-        print 'Home: %s' % self.permalink
+        util.logInfo( 'Home: %s', self.permalink )
 
     @property
     def templateName(self):
@@ -517,7 +518,7 @@ class Tags(ArticleBundle):
         map(lambda t: t.export(), self.tags)
 
     def printSelf(self):
-        print 'Tags: %s' % self.permalink
+        util.logInfo( 'Tags: %s', self.permalink )
 
     @property
     def count(self):
@@ -543,7 +544,7 @@ class Tag(ArticleBundle):
         self.name = tag
 
     def printSelf(self):
-        print 'Tag: %s %d %s' % (self.name, self.count, self.permalink)
+        util.logInfo( 'Tag: %s %d %s', self.name, self.count, self.permalink )
 
     @property
     def templateName(self):
@@ -583,7 +584,7 @@ class Categories(ArticleBundle):
         map(lambda c: c.export(), self.categories)
 
     def printSelf(self):
-        print 'Categories: %s' % self.permalink
+        util.logInfo( 'Categories: %s', self.permalink )
     
     @property
     def count(self):
@@ -599,7 +600,7 @@ class Category(ArticleBundle):
         self.name = category
 
     def printSelf(self):
-        print 'Category: %s %d %s' % (self.name, self.count, self.permalink)
+        util.logInfo( 'Category: %s %d %s', self.name, self.count, self.permalink )
 
     @property
     def templateName(self):
@@ -642,8 +643,8 @@ class Sitemap(object):
         page_count = len(self.urls)
         url_str = '\n'.join(unicode(s) for s in self.urls if s)
         content = util.parseTemplateString(self.SM_CONTENT_TPL, (page_count, url_str))
-        print 'Sitemap:'
+        util.logInfo( 'Sitemap:' )
         export_file = self.site.generateDeployFilePath('sitemap.xml', assign=True)
         with open(export_file, 'w') as fp:
             fp.write(content)
-        print "    => %s" % self.site.getRelativePath(export_file) 
+        util.logInfo( '    => %s', self.site.getRelativePath(export_file) )

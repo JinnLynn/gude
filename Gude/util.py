@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import sys, os, re, urllib, codecs
+import sys, os, re, urllib, codecs, logging
 from datetime import datetime
 import time
 
@@ -62,10 +62,38 @@ def die(msg):
     sys.stderr.write(msg + '\n')
     sys.exit(1)
 
-def log(msg):
-    if DEV_MODE:
-        print 'LOG:', msg
-
 def getRelativePath(abspath):
     assert abspath.find(SITE_PATH) == 0, 'path error. %s' % abspath
     return abspath[len(SITE_PATH)+1:]
+
+
+# 日志处理
+def logInit():
+    logger = logging.getLogger()
+    #filehandler = logging.FileHandler('log.log')
+    streamhandler = logging.StreamHandler()
+    #fmt = logging.Formatter('%(asctime)s, %(funcName)s, %(message)s')
+    logger.setLevel(logging.WARNING)
+    #logger.addHandler(filehandler)
+    logger.addHandler(streamhandler)
+    return logger
+
+LOGGER = logInit()
+
+def logLevelSet(level):
+    LOGGER.setLevel(level)
+
+def logError(msg, *args, **kwargs):
+    LOGGER.error(msg, *args, **kwargs)
+
+def logWarning(msg, *args, **kwargs):
+    LOGGER.warning(msg, *args, **kwargs)
+
+def logInfo(msg, *args, **kwargs):
+    LOGGER.info(msg, *args, **kwargs)
+
+def logDebug(msg, *args, **kwargs):
+    LOGGER.debug(msg, *args, **kwargs)
+
+def logAlways(msg, *args, **kwargs):
+    LOGGER.critical(msg, *args, **kwargs)
