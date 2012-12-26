@@ -177,6 +177,7 @@ class Article(object):
         data = {'site': self.site, 'article': self}
         self.site.exportFile(self.exportFilePath, self.layout, data)
 
+    @property
     def isMarkdown(self):
         extension = os.path.splitext(self.source)[1][1:]
         return extension.find('md') == 0 or extension.find('markdown') == 0
