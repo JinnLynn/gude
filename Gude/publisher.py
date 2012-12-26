@@ -49,7 +49,7 @@ class Publisher(object):
             print 'unsupported publish type.'
 
     def publishByGit(self, force=False):
-        remote = self.site.config.get('git_remote', '');
+        remote = self.site.getConfig('git_remote');
         if not remote:
             print 'config git_remote not found.'
             return
@@ -61,9 +61,9 @@ class Publisher(object):
 
     def publishByGitFtp(self, force=False):
 
-        server = self.site.config.get('ftp_server', '')
-        usr = self.site.config.get('ftp_usr', '')
-        pwd = self.site.config.get('ftp_pwd', '')
+        server = self.site.getConfig('ftp_server')
+        usr = self.site.getConfig('ftp_usr')
+        pwd = self.site.getConfig('ftp_pwd')
         server_str = '-u "%s" -p "%s" "%s"' % (usr, pwd, server)
         option = ''
         if force:
@@ -111,7 +111,7 @@ class Publisher(object):
         return False
 
     def getPublishType(self):
-        config = self.site.config.get('publish_type', 'none').lower()
+        config = self.site.getConfig('publish_type', 'none').lower()
         for key in PTMAP.keys():
             if key == config:
                 return PTMAP[key]

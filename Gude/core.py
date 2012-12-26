@@ -146,7 +146,7 @@ class Site:
         util.logInfo( print_info('assets', self.getRelativePath(assets_path)) )
         shutil.copytree(self.assetsPath, assets_path)
 
-        files = self.config.get('file_copy', {})
+        files = self.getConfig('file_copy', {})
         if not isinstance(files, dict):
             print "config 'file_copy' Error"
             return
@@ -234,6 +234,10 @@ class Site:
             self.lookup = TemplateLookup(directories=[self.layoutPath], input_encoding='utf-8')
         return self.lookup.get_template(util.tplFile(str(name)))
 
+    # 获取设置
+    def getConfig(self, key, default = ''):
+        return self.config.get(key, default);
+
     # 原始文章路径
     @property
     def articlePath(self):
@@ -248,7 +252,7 @@ class Site:
     # 站点工作目录 => 脚本目录
     @property
     def themePath(self):
-        cur_theme = self.config.get('theme', 'default')
+        cur_theme = self.getConfig('theme', 'default')
         theme_path = os.path.join(SITE_PATH, 'theme', cur_theme)
         if os.path.isdir(theme_path):
             return theme_path
@@ -268,37 +272,37 @@ class Site:
 
     @property
     def feedFilename(self):
-        return self.config.get('feed_filename', 'atom.xml')
+        return self.getConfig('feed_filename', 'atom.xml')
 
     # 每页文章数
     @property
     def numPerPage(self):
-        return self.config.get('num_per_page', 5)
+        return self.getConfig('num_per_page', 5)
 
     # 存档页文章数
     @property
     def numPerPageInArchive(self):
-        return self.config.get('num_in_archive', 50)
+        return self.getConfig('num_in_archive', 50)
 
     # Feed输出的文章数量
     @property
     def numInFeed(self):
-        return self.config.get('num_in_feed', 10)
+        return self.getConfig('num_in_feed', 10)
 
     # 配置属性
     @property
     def siteAuthor(self):
-        return self.config.get('author', '')
+        return self.getConfig('author')
 
     # 默认layout
     @property
     def defaultLayout(self):
-        return self.config.get('default_layout', 'post')  
+        return self.getConfig('default_layout', 'post')  
 
     @property
     def siteDomain(self):
         default = 'http://localhost/'
-        domain = self.config.get('domain', default) if not self.isLocalMode else self.config.get('local_domain', default)
+        domain = self.getConfig('domain', default) if not self.isLocalMode else self.getConfig('local_domain', default)
         return '%s/' % domain.strip(' /')
         
     @property
@@ -316,8 +320,8 @@ class Site:
         return self.getSiteUrl_('local_domain', 'local_subdirectory')
 
     def getSiteUrl_(self, domain_key, sub_dir_key):
-        domain = self.config.get(domain_key, 'http://localhost/').strip(' /')
-        subdir = self.config.get(sub_dir_key, '')
+        domain = self.getConfig(domain_key, 'http://localhost/').strip(' /')
+        subdir = self.getConfig(sub_dir_key)
         subdir = re.sub('//+', '/', subdir.strip('/'))
         if subdir:
             subdir += '/'
@@ -325,32 +329,28 @@ class Site:
 
     @property
     def feedUrl(self):
-        feed_url = self.config.get('feed_url', '').strip()
+        feed_url = self.getConfig('feed_url').strip()
         return feed_url if feed_url else self.siteUrl + self.feedFilename.lstrip('/')
 
     @property
     def siteTitle(self):
-        return self.config.get('title', '')
+        return self.getConfig('title')
 
     @property
     def siteTagline(self):
-        return self.config.get('tagline', '')
+        return self.getConfig('tagline')
 
     @property
     def siteCategories(self):
-        return self.config.get('category', [])
-
-    @property
-    def disgusShortname(self):
-        return self.config.get('disgus_shortname', '')
+        return self.getConfig('category', [])
 
     @property
     def contentFilter(self):
-        return self.config.get('content_filter', [])
+        return self.getConfig('content_filter', [])
 
     @property
     def isGitHubProjectPage(self):
-        return self.config.get('github_project_page', False)
+        return self.getConfig('github_project_page', False)
 
     @property
     def googleSearchSiteDomain(self):
@@ -378,7 +378,7 @@ class Site:
         return None
 
     def getDesignated(self, source):
-        designated = self.config.get('designated', {})
+        designated = self.getConfig('designated', {})
         if not isinstance(designated, dict):
             return None
         source = self.getRelativePathWithArticle(source)
@@ -387,14 +387,14 @@ class Site:
 
     # 网站跟踪代码 使用Google Analytics
     def getSiteTrackCode(self):
-        track_id = self.config.get('google_analytics_track_id', '')
+        track_id = self.getConfig('google_analytics_track_id')
         if not track_id:
             return '<!-- google_analytics_track_id is not configured. -->'
         return util.parseTemplateString(SITE_TRACK_TEMPLATE, track_id)
 
     # disqus 评论代码
     def getDisqusCommentCode(self, permalink = None):
-        disgus_shortname = self.config.get('disgus_shortname', '')
+        disgus_shortname = self.getConfig('disgus_shortname')
         if not disgus_shortname:
             return '<!-- disgus_shortname is not configured. -->'
         if permalink:
@@ -403,14 +403,14 @@ class Site:
 
     # disqus 评论计数代码
     def getDisqusCommentCountCode(self):
-        disgus_shortname = self.config.get('disgus_shortname', '')
+        disgus_shortname = self.getConfig('disgus_shortname')
         if not disgus_shortname:
             return '<!-- disgus_shortname is not configured. -->'
         return util.parseTemplateString(DISGUS_COMMENT_COUNT_TEMPLATE, disgus_shortname)
 
     def getHeaderMenu(self):
         menus = [{'title': 'Home', 'url': self.siteUrl}]
-        menus.extend( self.config.get('header_menu', []) )
+        menus.extend( self.getConfig('header_menu', []) )
         return menus
 
 class Gude(Application):
@@ -556,7 +556,7 @@ class Gude(Application):
         print 'local backup success.'
         if not args.remote:
             return
-        server = self.site.config.get('git_remote', '');
+        server = self.site.getConfig('git_remote');
         force_opt = '--force' if args.force else ''
         ret = os.system('git push %s %s %s' % (force_opt, server, branch))
         print 'remote backup [%s %s] %s.' % (server, branch, 'success' if ret == 0 else 'fail')
