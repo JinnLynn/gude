@@ -54,18 +54,23 @@ class Article(object):
         config = {}
         index = 1
 
-        # 日志配置 必须从第一行开始 支持使用<!-- --> 或 --- ---包含
-        first_line = lines[0]
-        if not first_line.startswith('<!--'):
+        # 解析文章配置
+        try:
+            # 日志配置 必须从第一行开始 支持使用<!-- --> 或 --- ---包含
+            first_line = lines[0]
+            if not first_line.startswith('<!--'):
+                util.logWarning( "invalid article: config error '%s'", self.site.getRelativePath(self.source) )
+                return False
+
+            for line in lines[1:]:
+                index += 1
+                if line.startswith('-->'):
+                    break
+                config_str += line
+            config.update( yaml.load(config_str) )
+        except Exception, e:
             util.logWarning( "invalid article: config error '%s'", self.site.getRelativePath(self.source) )
             return False
-
-        for line in lines[1:]:
-            index += 1
-            if line.startswith('-->'):
-                break
-            config_str += line
-        config.update( yaml.load(config_str) )
         
         self.title      = config.get('title',       self.title)
         self.date       = config.get('date',        self.date)
