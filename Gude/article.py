@@ -69,23 +69,23 @@ class Article(object):
         
         self.title      = config.get('title',       self.title)
         self.date       = config.get('date',        self.date)
+        self.tag        = config.get('tag',         self.tag)
+        self.category   = config.get('category',    self.category)
         self.layout     = config.get('layout',      self.layout)
         self.author     = config.get('author',      self.author)
         self.modify     = config.get('modify',      self.modify)
-        self.tag        = config.get('tag',         self.tag)
-        self.category   = config.get('category',    self.category)
         self.custom     = config.get('custom',      self.custom)
         self.unlisted   = config.get('unlisted',    self.unlisted)
         self.status     = config.get('status',      self.status);
+
+        self.category = self.standardizeListConfig(self.category)
+        self.tag      = self.standardizeListConfig(self.tag)
+        self.unlisted = self.standardizeListConfig(self.unlisted)
 
         try:
             self.status = self.status.lower();
         except Exception, e:
             self.status = str(self.status).lower()
-
-        # 检查修改时间
-        if self.modify < self.date:
-            self.modify = self.date
 
         # 草稿 且 不是本地模式
         if self.isDraft():
@@ -106,6 +106,10 @@ class Article(object):
         # 不列出的文章
         if len(self.unlisted):
             util.logInfo( "unlisted in [%s]: '%s'", ', '.join(unicode("'" + s + "'") for s in self.unlisted if s), self.site.getRelativePath(self.source) )
+
+        # 检查修改时间
+        if self.modify < self.date:
+            self.modify = self.date
 
         # 唯一标识码 发布时间时间戳的后5位
         self.unique = ('%d' % util.timestamp(self.date))[-5:]
@@ -159,6 +163,14 @@ class Article(object):
         if not isinstance(self.date, datetime):
             return False
         return True
+
+    # 检查配置 尝试转换成list
+    def standardizeListConfig(self, cfg):
+            if isinstance(cfg, list):
+                return cfg;
+            elif isinstance(cfg, str) or isinstance(cfg, unicode):
+                return map(lambda s:s.strip(), cfg.split(','))
+            return []
 
     # 检查文章分类的有效性 只有在网站配置'category'中存在了才可用
     # 对象转换为Category对象
