@@ -27,7 +27,7 @@ class Article(object):
         # 文章配置的默认值
         self.layout     = self.site.defaultLayout
         self.title      = 'untitled'
-        self.date       = datetime.now()
+        self.date       = util.fileCreateDate(self.source)
         self.modify     = util.fileModifyDate(self.source)
         self.author     = self.site.siteAuthor
         self.tag        = []

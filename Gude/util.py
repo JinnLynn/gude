@@ -29,6 +29,9 @@ timestamp = lambda d = None: int( time.time() if not isinstance(d, datetime) els
 # 文件hash
 fileHash = lambda f: '%d' % ( 0 if not os.path.isfile(f) else int (os.stat(f).st_mtime) )
 
+# 文件创建时间
+fileCreateDate = lambda f: datetime.now() if not os.path.isfile(f) else datetime.fromtimestamp( int( os.stat(f).st_ctime ) )
+
 # 文件修改时间
 fileModifyDate = lambda f: datetime.now() if not os.path.isfile(f) else datetime.fromtimestamp( int( os.stat(f).st_mtime ) )
 
