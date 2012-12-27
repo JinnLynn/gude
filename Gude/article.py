@@ -11,6 +11,12 @@ from setting import *
 # 首页包括标签与分类页  Sitemap   存档页      Feed
 # home               sitemap   archives   feed
 
+# status 可选关键词
+# 置顶在archives sitemap feed页无效
+#                       已发布(默认)  置顶      草稿
+ARTICLE_STATUS_LIST = ['publish',   'sticky', 'draft']
+
+
 """ 单篇文章 """
 class Article(object):
     
@@ -28,7 +34,7 @@ class Article(object):
         self.category   = []
         self.custom     = {}
         self.unlisted   = []
-        self.draft      = False
+        self.status     = 'publish'
 
         self.content = ''
         self.summary = ''
@@ -61,25 +67,31 @@ class Article(object):
             config_str += line
         config.update( yaml.load(config_str) )
         
-        self.layout     = config.get('layout',      self.layout)
         self.title      = config.get('title',       self.title)
-        self.author     = config.get('author',      self.author)
         self.date       = config.get('date',        self.date)
+        self.layout     = config.get('layout',      self.layout)
+        self.author     = config.get('author',      self.author)
         self.modify     = config.get('modify',      self.modify)
         self.tag        = config.get('tag',         self.tag)
         self.category   = config.get('category',    self.category)
         self.custom     = config.get('custom',      self.custom)
         self.unlisted   = config.get('unlisted',    self.unlisted)
-        self.draft      = config.get('draft',       self.draft)
+        self.status     = config.get('status',      self.status);
+
+        try:
+            self.status = self.status.lower();
+        except Exception, e:
+            self.status = str(self.status).lower()
 
         # 检查修改时间
         if self.modify < self.date:
             self.modify = self.date
 
         # 草稿 且 不是本地模式
-        if self.draft and not self.site.isLocalMode:
+        if self.isDraft():
             util.logWarning( "draft: '%s'", self.site.getRelativePath(self.source) )
-            return False
+            if not self.site.isLocalMode:
+                return False
 
         # 检查date
         if not self.checkDateAvailable():
@@ -124,7 +136,7 @@ class Article(object):
         self.summary = self.contentFilter(self.summary) if self.summary else self.content
 
         # 草稿 标题加前缀
-        if self.draft:
+        if self.isDraft():
             self.title = '__DRAFT__ ' + self.title
 
         return True
@@ -247,6 +259,15 @@ class Article(object):
     def isListed(self, key):
         return False if key in self.unlisted else True
 
+    def isDraft(self):
+        return self.status == 'draft'
+
+    def isPublish(self):
+        return self.isSticky() or self.status == 'publish' or self.status not in ARTICLE_STATUS_LIST
+
+    def isSticky(self):
+        return self.status == 'sticky'
+
 # 被指定生成文件的日志
 class DesignatedArticle(Article):
     def __init__(self, site, source, designated):
@@ -326,7 +347,7 @@ class ArticleBundle(object):
         if self.count <= 0:
             return
 
-        self.sortByDateDESC()
+        self.sortArticles()
 
         paged_articles = self.getPagedArticles()
         total_page_num = self.totalPageNum
@@ -341,10 +362,18 @@ class ArticleBundle(object):
     def printSelf(self):
         pass
 
+    # 对文章排序
+    def sortArticles(self):
+        self.sortByDateDESC()
+        self.sortBySticky()
+
     # 按日期倒序排序
     def sortByDateDESC(self):
-        self.articles = sorted(self.articles, key = lambda a: a.date, reverse = True ) 
-        pass
+        self.articles = sorted(self.articles, key = lambda a: a.date, reverse = True )
+
+    # 置顶处理
+    def sortBySticky(self):
+        self.articles = sorted(self.articles, key = lambda a: a.isSticky(), reverse = True)
 
     @property
     def count(self):
@@ -414,6 +443,10 @@ class Archives(ArticleBundle):
     def printSelf(self):
         util.logInfo( 'Archives:' )
 
+    def sortArticles(self):
+        # 不关心置顶
+        self.sortByDateDESC()
+
     @property
     def templateName(self):
         return 'archives'
@@ -454,6 +487,7 @@ class Feed(ArticleBundle):
     def export(self):
 
         self.sortByDateDESC()
+
         num = self.site.numInFeed;
         articles = []
         if len(self.articles) >= num:
@@ -506,8 +540,8 @@ class Tags(ArticleBundle):
                 else:
                     tags[slug] = Tag(self.site, tag.name)
                     tags[slug].addArticle(article)
-        # 按文章数排序
-        return sorted(tags.values(), cmp = lambda a, b: a.count > b.count)
+        
+        return tags.values()
 
     def export(self):
         self.printSelf()
@@ -515,6 +549,7 @@ class Tags(ArticleBundle):
         if self.count == 0:
             return
 
+        # 按文章数排序
         self.tags = sorted(self.tags, key=lambda a: a.count, reverse = True)
 
         data = {'site': self.site, 'tags': self.tags}

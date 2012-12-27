@@ -486,8 +486,8 @@ class Gude(Application):
     @subcommand('add', help='add new article')
     @store('-t', default='Untitled', dest='title', help='article title')
     @store('-f', default='', dest='filename', help='article filename, no extension')
-    @true('-d', default=False, dest='is_draft', help='draft')
-    @store('-l', default='', dest='layout' )
+    @store('--status', default='', dest='status', help='article status')
+    @store('--layout', default='', dest='layout'  )
     @true('--html', default=False, dest='is_html', help='Use HTML type, default is Markdown')
     def add(self, args):
         self.site.checkDir()
@@ -507,16 +507,16 @@ class Gude(Application):
             return
 
         append_info = ''
-        if args.is_draft:
-            append_info += '\ndraft:      yes'
+        if args.layout:
+            append_info += '\nlayout:     %s' % args.layout
+        if args.status:
+            append_info += '\nstatus:     %s' % args.status
 
         filename += '.html' if args.is_html else '.md' 
         filename = '%s%s' % (datetime.now().strftime(ARTICLE_FILENAME_PREFIX_FORMAT), filename)
         abspath = os.path.join(self.site.articlePath, dirname, filename)
-        if not args.layout:
-            args.layout = self.site.defaultLayout
         args.title = args.title.decode('utf-8')
-        header = ARTICLE_TEMPLATE % (args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), args.layout, append_info)
+        header = ARTICLE_TEMPLATE % (args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), append_info)
         util.writeToFile(abspath, header)
         util.logAlways( "article '%s' created.", self.site.getRelativePath(abspath) )
 
