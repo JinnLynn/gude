@@ -105,7 +105,7 @@ title:      %s
 date:       %s
 layout:     %s
 category:   []
-tag:        []
+tag:        []%s
 -->
 
 """

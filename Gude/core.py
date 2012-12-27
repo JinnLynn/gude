@@ -480,7 +480,7 @@ class Gude(Application):
     @subcommand('add', help='add new article')
     @store('-t', default='Untitled', dest='title', help='article title')
     @store('-f', default='', dest='filename', help='article filename, no extension')
-    @store('-d', default='', dest='dirname', help='article directory')
+    @true('-d', default=False, dest='is_draft', help='draft')
     @store('-l', default='', dest='layout' )
     @true('--html', default=False, dest='is_html', help='Use HTML type, default is Markdown')
     def add(self, args):
@@ -490,21 +490,27 @@ class Gude(Application):
             util.logError( 'something error.' )
             return
 
-        if not args.filename:
-            args.filename = util.standardizePath(args.title)
+        dirname, filename = os.path.split(args.filename);
+
+        if not filename:
+            filename = util.standardizePath(args.title)
+
         # 检查文件是否存在 文件名相同即有问题 后缀不重要
-        if self.isBasenameExists(args.filename, args.dirname):
+        if self.isBasenameExists(dirname, filename):
             util.logError( 'filename is already exists.' )
             return
 
-        filename = args.filename
+        append_info = ''
+        if args.is_draft:
+            append_info += '\ndraft:      yes'
+
         filename += '.html' if args.is_html else '.md' 
         filename = '%s%s' % (datetime.now().strftime(ARTICLE_FILENAME_PREFIX_FORMAT), filename)
-        abspath = os.path.join(self.site.articlePath, args.dirname, filename)
+        abspath = os.path.join(self.site.articlePath, dirname, filename)
         if not args.layout:
             args.layout = self.site.defaultLayout
         args.title = args.title.decode('utf-8')
-        header = ARTICLE_TEMPLATE % (args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), args.layout)
+        header = ARTICLE_TEMPLATE % (args.title, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), args.layout, append_info)
         util.writeToFile(abspath, header)
         util.logAlways( "article '%s' created.", self.site.getRelativePath(abspath) )
 
@@ -575,11 +581,13 @@ class Gude(Application):
             util.logAlways('Server successfully stopped')
             exit()
 
-    def isBasenameExists(self, basename, dirname):
+    def isBasenameExists(self, dirname, basename):
+        if os.path.isabs(dirname):
+            util.die('error: must be a relative path');
         abs_dir = os.path.join( self.site.articlePath, dirname)
         if not os.path.isdir(abs_dir):
             os.makedirs(abs_dir)
-            print "directory '%s' created." % self.site.getRelativePath(abs_dir)
+            util.logInfo("directory '%s' created." % self.site.getRelativePath(abs_dir))
         for f in os.listdir(abs_dir):
             base, extionsion = os.path.splitext(f)
             base = base[ARTICLE_FILENAME_PREFIX_LEN:]
