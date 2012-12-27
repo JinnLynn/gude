@@ -185,7 +185,13 @@ class Site:
         assert type(page) == int and page >= 1, 'page must be INT and >= 1. '
         is_url_quoted = kwargs.get('quoted', False) # 地址已转换成url组件
         site_url = self.siteUrl;
-        sub_url = util.standardizePath('/'.join(unicode(s) for s in parts if s)).strip('/')
+        try:
+            sub_url = '/'.join(str(s) for s in parts if s)
+        except Exception, e:
+            sub_url = '/'.join(unicode(s) for s in parts if s)
+        finally:
+            sub_url = util.standardizePath(sub_url).strip('/')
+        
         if not is_url_quoted:
             sub_url = util.urlQuote(sub_url)
         if page != 1:
