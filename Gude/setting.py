@@ -103,8 +103,8 @@ ftp_pwd:                'YOUR FTP PASSWORD'
 ARTICLE_TEMPLATE = """<!--
 title:      %s
 date:       %s
-category:   []
-tag:        []%s
+category:   ~
+tag:        ~%s
 -->
 
 """

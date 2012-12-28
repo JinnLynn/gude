@@ -42,12 +42,19 @@ class Article(object):
         self.unique = ''
 
     def parse(self):
-        if not os.path.exists(self.source):
-            util.logWarning( 'file non-existent. [%s]', self.source )
-            return False
+        relative_source_path = self.site.getRelativePath(self.source)
 
-        fp = codecs.open(self.source, 'r', encoding='utf-8')
-        lines = fp.readlines()
+        lines = []
+        try:
+            with codecs.open(self.source, 'r', encoding='utf-8') as fp:
+                lines = fp.readlines()
+        except UnicodeDecodeError:
+            util.logWarning( "invalid article: file encoding error, must be utf-8. '%s'",  relative_source_path )
+            return False
+        except Exception, e:
+            util.logWarning( "invalid article: open fail fail '%s'",  relative_source_path )
+            util.logWarning(e)
+        
 
         # 解析文章信息
         config_str = ''
@@ -59,7 +66,7 @@ class Article(object):
             # 日志配置 必须从第一行开始 支持使用<!-- --> 或 --- ---包含
             first_line = lines[0]
             if not first_line.startswith('<!--'):
-                util.logWarning( "invalid article: config error '%s'", self.site.getRelativePath(self.source) )
+                util.logWarning( "invalid article: config error '%s'", relative_source_path )
                 return False
 
             for line in lines[1:]:
@@ -69,7 +76,8 @@ class Article(object):
                 config_str += line
             config.update( yaml.load(config_str) )
         except Exception, e:
-            util.logWarning( "invalid article: config error '%s'", self.site.getRelativePath(self.source) )
+            util.logWarning( "invalid article: config error '%s'", relative_source_path )
+            util.logWarning(e)
             return False
         
         self.title      = config.get('title',       self.title)
@@ -94,23 +102,23 @@ class Article(object):
 
         # 草稿 且 不是本地模式
         if self.isDraft():
-            util.logWarning( "draft: '%s'", self.site.getRelativePath(self.source) )
+            util.logWarning( "draft: '%s'", relative_source_path )
             if not self.site.isLocalMode:
                 return False
 
         # 检查date
         if not self.checkDateAvailable():
-            util.logWarning( "invalid article: date error '%s'", self.site.getRelativePath(self.source) )
+            util.logWarning( "invalid article: date error '%s'", relative_source_path )
             return False
 
         # 时间超出现在的文章
         if self.date > datetime.now():
-            util.logWarning( "date out: [%s] %s", (str(self.date), self.site.getRelativePath(self.source)) )
+            util.logWarning( "date out: [%s] %s", (str(self.date), relative_source_path) )
             return False
 
         # 不列出的文章
         if len(self.unlisted):
-            util.logInfo( "unlisted in [%s]: '%s'", ', '.join(unicode("'" + s + "'") for s in self.unlisted if s), self.site.getRelativePath(self.source) )
+            util.logInfo( "unlisted in [%s]: '%s'", ', '.join(unicode("'" + s + "'") for s in self.unlisted if s), relative_source_path )
 
         # 检查修改时间
         if self.modify < self.date:
@@ -138,7 +146,7 @@ class Article(object):
         self.summary.strip('\n\t ')
 
         if len(self.content) == 0:  #? 都不会成立，总是会有一个类似换行的东西 又不是\n WHY?
-            util.logWarning( "invalid article: content empty '%s'", self.site.getRelativePath(self.source) )
+            util.logWarning( "invalid article: content empty '%s'", relative_source_path )
             return False
         
         self.content = self.contentFilter(self.content)
