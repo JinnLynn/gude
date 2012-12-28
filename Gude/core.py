@@ -577,15 +577,19 @@ class Gude(Application):
         self.site.build()
 
     def startServer(self, port):
-        httpd_ = server.Server(self, port)
         try:
+            httpd_ = server.Server(self, port)
             util.logAlways('Webserver [http://localhost:%d] starting...', port)
             httpd_.serve_forever()
         except KeyboardInterrupt, SystemExit:
             util.logAlways( '\nReceived shutdown request. Shutting down...' )
             httpd_.shutdown()
             util.logAlways('Server successfully stopped')
-            exit()
+            util.die()
+        except Exception, e:
+            util.logAlways('Webserver start fail')
+            util.logAlways(e)
+            util.die()
 
     def isBasenameExists(self, dirname, basename):
         if os.path.isabs(dirname):

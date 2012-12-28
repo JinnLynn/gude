@@ -61,8 +61,9 @@ def urlQuote(s):
     except Exception, e:
         return urllib.quote( re.sub('[- ]+', '-', s.lower() ).encode('utf-8'))
 
-def die(msg):
-    sys.stderr.write(msg + '\n')
+def die(msg=''):
+    if len(msg):
+        sys.stderr.write(msg + '\n')
     sys.exit(1)
 
 def getRelativePath(abspath):
