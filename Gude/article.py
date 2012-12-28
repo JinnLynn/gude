@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, codecs, time
+import sys, os, codecs, time, re
 from datetime import datetime
 
 import yaml, feedgenerator
@@ -136,16 +136,16 @@ class Article(object):
         self.summary = ''
         for line in lines[index:]:
             # 类似 <!--more--> 的标示
-            line_strip = line.strip(' \t\r\n')
-            if line_strip.find('<!--') == 0 and line_strip.find('more') and line_strip.find('-->'):
+            more_re = re.compile(r'^\s*<!--( *)more( *)-->\s*')
+            if more_re.match(line):
                 self.summary = self.content
                 line = '<span id="more-%s"></span>\n' % self.unique
             self.content += line
 
-        self.content.strip('\n\t ')
-        self.summary.strip('\n\t ')
+        self.content = self.content.strip('\n\r\t ')
+        self.summary = self.summary.strip('\n\r\t ')
 
-        if len(self.content) == 0:  #? 都不会成立，总是会有一个类似换行的东西 又不是\n WHY?
+        if len(self.content) == 0:
             util.logWarning( "invalid article: content empty '%s'", relative_source_path )
             return False
         
