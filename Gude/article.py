@@ -451,8 +451,8 @@ class ArticleBundle(object):
         # 根据页面中最新日志获得更新时间
         lastmod = None
         for a in self.articles:
-            if not lastmod or lastmod < a.date:
-                lastmod = a.date
+            if not lastmod or lastmod < a.modify:
+                lastmod = a.modify
         for i in xrange(1, self.totalPageNum + 1):
             self.site.sitemap.addUrl(self.getPagePermalink(i), lastmod = lastmod)
 
