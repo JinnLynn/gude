@@ -530,7 +530,7 @@ class Feed(ArticleBundle):
             feed.add_item(  title = article.title,
                             link = article.permalink,
                             description = article.summary,
-                            pubdate = article.date)
+                            pubdate = util.toUTC(article.date) )
             if item_count >= self.site.numInFeed:
                 break
         
@@ -701,9 +701,7 @@ class Sitemap(object):
     def addUrl(self, loc, lastmod = None, changefreq = 'monthly', priority = '0.5'):
         if not loc:
             return
-        if not isinstance(lastmod, datetime):
-            lastmod = datetime.now()
-        lastmod = lastmod.strftime('%Y-%m-%dT%X')
+        lastmod = util.toUTCISO8601( lastmod )
         url = util.parseTemplateString(self.SM_UPL_TPL, (loc, lastmod))
         self.urls.append(url)
 

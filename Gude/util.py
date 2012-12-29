@@ -21,7 +21,12 @@ standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
 markdown = lambda s: markdown2.markdown(s, extras=['footnotes', 'toc', 'fenced-code-blocks', 'cuddled-lists'])
 
 # UTC时间字符串
-utcNow = lambda: '%s UTC' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+utcNow = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+# 根据本地时区转换成UTC时间 
+toUTC = lambda d: d - (datetime.now() - datetime.utcnow()) if isinstance(d, datetime) else datetime.utcnow()
+# 以ISO 8601输出UTC时间
+toUTCISO8601 = lambda d: toUTC(d).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 # 时间戳
 timestamp = lambda d = None: int( time.time() if not isinstance(d, datetime) else time.mktime(d.timetuple()) )
