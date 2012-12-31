@@ -20,8 +20,9 @@ class Site:
 
         try:
             config_file = self.getPathInSite(DEFAULT_CONFIG_FILE)
-            with open(config_file) as f:
-                self.config.update( yaml.load(f) )
+            if os.path.isfile(config_file):
+                with open(config_file) as f:
+                    self.config.update( yaml.load(f) )
 
             privacy_config_file = self.getPathInSite(DEFAULT_PRIVACY_CONFIG_FILE)
             if os.path.isfile(privacy_config_file):
@@ -146,19 +147,23 @@ class Site:
         util.logInfo( print_info('assets', self.getRelativePath(assets_path)) )
         shutil.copytree(self.assetsPath, assets_path)
 
-        files = self.getConfig('file_copy', {})
-        if not isinstance(files, dict):
-            print "config 'file_copy' Error"
+        copy_files = self.getConfig('file_copy', [])
+        if not isinstance(copy_files, list):
+            util.logWarning( "config 'file_copy' Error" )
             return
-        
-        for f in files.keys():
-            from_files = glob(f)
-            if not len(from_files):
-                print "file '%s' is non-existent" % f
+
+        for cfg in copy_files:
+            src = cfg.get('src', None)
+            dst = cfg.get('dst', None)
+            if not src or not dst:
                 continue
-            to_file = os.path.join(self.deployPath, files[f]) # 保留指定的文件大小写 不能用generateDeployFilePath
+            from_files = glob(src)
+            if not len(from_files):
+                util.logWarning( "file '%s' is non-existent" % f )
+                continue
+            to_file = os.path.join(self.deployPath, dst) # 保留指定的文件大小写 不能用generateDeployFilePath
             if os.path.exists(to_file) and not os.path.isdir(to_file):
-                print "file '%s' is already exists" % self.getRelativePath(to_file)
+                util.logWarning( "file '%s' is already exists" % self.getRelativePath(to_file) )
                 continue
             for from_file in from_files:  
                 if os.path.isfile(from_file):
@@ -242,7 +247,8 @@ class Site:
 
     # 获取设置
     def getConfig(self, key, default = ''):
-        return self.config.get(key, default);
+        cfg = self.config.get(key, default)
+        return default if cfg is None else cfg
 
     # 原始文章路径
     @property
@@ -335,8 +341,7 @@ class Site:
 
     @property
     def feedUrl(self):
-        feed_url = self.getConfig('feed_url').strip()
-        return feed_url if feed_url else self.siteUrl + self.feedFilename.lstrip('/')
+        return self.getConfig('feed_url', self.siteUrl + self.feedFilename.lstrip('/')).strip()
 
     @property
     def siteTitle(self):
@@ -348,11 +353,11 @@ class Site:
 
     @property
     def siteCategories(self):
-        return self.getConfig('category', [])
+        return util.tryToList( self.getConfig('category', []) )
 
     @property
     def contentFilter(self):
-        return self.getConfig('content_filter', [])
+        return util.tryToList( self.getConfig('content_filter', []) )
 
     @property
     def isGitHubProjectPage(self):
@@ -384,12 +389,14 @@ class Site:
         return None
 
     def getDesignated(self, source):
-        designated = self.getConfig('designated', {})
-        if not isinstance(designated, dict):
+        designated = self.getConfig('designated', [])
+        if not isinstance(designated, list):
             return None
         source = self.getRelativePathWithArticle(source)
-        dist = designated.get(source, None)
-        return dist
+        for d in designated:
+            if source == d.get('src', ''):
+                return d.get('dst', None)
+        return None
 
     # 网站跟踪代码 使用Google Analytics
     def getSiteTrackCode(self):
@@ -553,7 +560,7 @@ class Gude(Application):
             return
 
         # 提交改变
-        os.system('git add . && git commit -am "backup at %s" > /dev/null' % util.utcNow())
+        os.system('git add . && git commit -am "backup at %s" > /dev/null' % util.toUTCISO8601())
 
         # 如果是GitHub项目主页 则 分支为master 否则为source
         branch = 'master' if self.site.isGitHubProjectPage else 'source'

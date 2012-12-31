@@ -91,9 +91,9 @@ class Article(object):
         self.unlisted   = config.get('unlisted',    self.unlisted)
         self.status     = config.get('status',      self.status);
 
-        self.category = self.standardizeListConfig(self.category)
-        self.tag      = self.standardizeListConfig(self.tag)
-        self.unlisted = self.standardizeListConfig(self.unlisted)
+        self.category = util.tryToList(self.category)
+        self.tag      = util.tryToList(self.tag)
+        self.unlisted = util.tryToList(self.unlisted)
 
         try:
             self.status = self.status.lower();
@@ -176,14 +176,6 @@ class Article(object):
         if not isinstance(self.date, datetime):
             return False
         return True
-
-    # 检查配置 尝试转换成list
-    def standardizeListConfig(self, cfg):
-            if isinstance(cfg, list):
-                return cfg;
-            elif isinstance(cfg, str) or isinstance(cfg, unicode):
-                return map(lambda s:s.strip(), cfg.split(','))
-            return []
 
     # 检查文章分类的有效性 只有在网站配置'category'中存在了才可用
     # 对象转换为Category对象

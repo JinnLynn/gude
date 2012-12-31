@@ -20,13 +20,10 @@ standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
 
 markdown = lambda s: markdown2.markdown(s, extras=['footnotes', 'toc', 'fenced-code-blocks', 'cuddled-lists'])
 
-# UTC时间字符串
-utcNow = lambda: datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-
 # 根据本地时区转换成UTC时间 
 toUTC = lambda d: d - (datetime.now() - datetime.utcnow()) if isinstance(d, datetime) else datetime.utcnow()
 # 以ISO 8601输出UTC时间
-toUTCISO8601 = lambda d: toUTC(d).strftime('%Y-%m-%dT%H:%M:%SZ')
+toUTCISO8601 = lambda d = None: toUTC(d).strftime('%Y-%m-%dT%H:%M:%SZ')
 
 # 时间戳
 timestamp = lambda d = None: int( time.time() if not isinstance(d, datetime) else time.mktime(d.timetuple()) )
@@ -56,8 +53,12 @@ def tryMakeDir(dirpath):
 # 如果文件所在的文件夹不存在则创建
 def tryMakeDirForFile(filepath):
     if not os.path.isdir( os.path.dirname( filepath ) ):
-        os.makedirs(os.path.dirname( filepath )) 
-                
+        os.makedirs(os.path.dirname( filepath ))
+
+def tryToList(var):
+    if isinstance(var, (str, unicode)):
+        return map(lambda s:s.strip(), var.split(','))
+    return [] if not isinstance(var, list) else var
 
 # 编码为网址资源组件
 def urlQuote(s):

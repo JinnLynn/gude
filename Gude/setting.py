@@ -34,47 +34,50 @@ DEFAULT_CONFIG = {
 SITE_INCLUDE_DIR = ['content', 'deploy', 'static', 'theme']
 
 SITE_CONFIG_TEMPLATE= u"""---
-domain:                 'HTTP://YOURDOMAIN.COM/'
-subdirectory:           '/'
-theme:                  'default'
-title:                  'YOUR SITE TITLE'
-tagline:                'YOUR SITE TAGLINE'
-author:                 'YOUR NAME'
-category:               ['Misc']
+domain:                 HTTP://YOURDOMAIN.COM/
+subdirectory:           /
+theme:                  default
+title:                  YOUR SITE TITLE
+tagline:                YOUR SITE TAGLINE
+author:                 YOUR NAME
+category:               [Misc]
 
 num_per_page:           5
 num_in_feed:            10
 num_in_archive:         50
 
-default_layout:         'post'
+default_layout:         post
 
 # 头部菜单 默认已包括首页 Home
 header_menu:
-    - 'title':          'Tags'
-      'url':            'HTTP://YOURDOMAIN.COM/tags/'
-    - 'title':          'Archives'
-      'url':            'HTTP://YOURDOMAIN.COM/archives/'
+    - title:            Tags
+      url:              HTTP://YOURDOMAIN.COM/tags/
+    - title:            Archives
+      url:              HTTP://YOURDOMAIN.COM/archives/
 
 # 外部服务设置
-disgus_shortname:           'YOUR DISGUS SHORTNAME'
-google_analytics_track_id:  'YOUR GOOGLE ANALYTICS TRACK ID'
+disgus_shortname:           YOUR DISGUS SHORTNAME
+google_analytics_track_id:  YOUR GOOGLE ANALYTICS TRACK ID
 # 如果使用了第三方Feed托管服务，则将其产生的Feed地址配置于此，留空将使用本地默认
-feed_url:                   ''
+feed_url:                   ~
 
-# 指定生成的文件名 KEY: 相对文章目录 VALUE: 相对发布目录
+# 指定生成的文件名 src: 相对文章目录 dst: 相对发布目录
 #designated:
-#    '1999-08-25-projects.md':   'projects/index.html'
+#    - src:      2000-01-01-projects.md
+#      dst:      projects/index.html
 
-content_filter:         ['Shortcode', 'CenterElement']
+content_filter:         [Shortcode, CenterElement]
 
-# 拷贝文件 KEY: 相对站点工作目录 VALUE: 相对发布目录
+# 拷贝文件 src: 相对站点工作目录 dst: 相对发布目录
 #file_copy:
-#    'static/htaccess':         '.htaccess'
-#    'static/CNAME':             'CNAME'
+#    - src:      static/favicon.ico
+#      dst:      assets/images/favicon.ico
+#    - src:      static/uploads/*
+#      dst:      assets/uploads/
 
 # publish: git gitftp
 # ftp git 服务器设置在privacy
-publish_type:           'YOUR PUBLISH TYPE'
+publish_type:           YOUR PUBLISH TYPE
 
 # 如果是github_project_page 则deploy发布到gh-pages分支 site内容发布
 # 否则deploy发布到master 站点原始发布到source
@@ -84,17 +87,17 @@ github_project_page:    no
 # 其键值为ftp_server、 ftp_usr、 ftp_pwd
 
 # 本地模式
-local_domain:           'http://localhost:8910'
-local_subdirectory:     '/'
+local_domain:           http://localhost:8910
+local_subdirectory:     /
 ...
 """
 
 SITE_PRIVACY_CONFIG_TEMPLATE = u"""---
-git_remote:             'YOUR GITHUB REPO URL'
+git_remote:             YOUR GITHUB REPO URL
 
-ftp_server:             'YOUR FTP SERVER'
-ftp_usr:                'YOUR FTP USER'
-ftp_pwd:                'YOUR FTP PASSWORD'
+ftp_server:             YOUR FTP SERVER
+ftp_usr:                YOUR FTP USER
+ftp_pwd:                YOUR FTP PASSWORD
 ...
 """
 

@@ -80,7 +80,7 @@ class Publisher(object):
             return False
         if not os.path.isdir('.git'):
             self.forceInitGitRepo()
-        os.system('git add . && git commit -am "update at %s"' % util.utcNow())
+        os.system('git add . && git commit -am "update at %s"' % util.toUTCISO8601())
         return True
 
     def forceInitGitRepo(self):
