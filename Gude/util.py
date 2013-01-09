@@ -18,7 +18,7 @@ cleanSlash = lambda s: re.sub('//+', '/', s)
 # 标准化路径： 联系多个'-'转为一个 空格转为 '-'
 standardizePath = lambda s: cleanSlash( re.sub('[- ]+', '-', s.lower()) )
 
-markdown = lambda s: markdown2.markdown(s, extras=['footnotes', 'toc', 'fenced-code-blocks', 'cuddled-lists'])
+markdown = lambda s: markdown2.markdown(s, extras=['footnotes', 'toc', 'fenced-code-blocks', 'cuddled-lists', 'wiki-tables'])
 
 # 根据本地时区转换成UTC时间 
 toUTC = lambda d: d - (datetime.now() - datetime.utcnow()) if isinstance(d, datetime) else datetime.utcnow()
