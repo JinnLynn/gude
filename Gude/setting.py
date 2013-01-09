@@ -36,16 +36,16 @@ SITE_INCLUDE_DIR = ['content', 'deploy', 'static', 'theme']
 SITE_CONFIG_TEMPLATE= u"""---
 domain:                 HTTP://YOURDOMAIN.COM/
 subdirectory:           /
-theme:                  default
 title:                  YOUR SITE TITLE
 tagline:                YOUR SITE TAGLINE
 author:                 YOUR NAME
-category:               [Misc]
+category:               [Other]
 
 num_per_page:           5
 num_in_feed:            10
 num_in_archive:         50
 
+theme:                  default
 default_layout:         post
 
 # 头部菜单 默认已包括首页 Home
@@ -75,24 +75,23 @@ content_filter:         [Shortcode, CenterElement]
 #    - src:      static/uploads/*
 #      dst:      assets/uploads/
 
+# 本地模式
+local_domain:           http://localhost:8910
+local_subdirectory:     /
+
+# 与服务器相关的配置见privacy.yaml
+
+...
+"""
+
+SITE_PRIVACY_CONFIG_TEMPLATE = u"""---
 # publish: git gitftp
-# ftp git 服务器设置在privacy
 publish_type:           YOUR PUBLISH TYPE
 
 # 如果是github_project_page 则deploy发布到gh-pages分支 site内容发布
 # 否则deploy发布到master 站点原始发布到source
 github_project_page:    no
 
-# 为避免在使用GIT时提交本配置文件时泄露FTP信息，FTP服务器的配置在 ftp-config.yaml
-# 其键值为ftp_server、 ftp_usr、 ftp_pwd
-
-# 本地模式
-local_domain:           http://localhost:8910
-local_subdirectory:     /
-...
-"""
-
-SITE_PRIVACY_CONFIG_TEMPLATE = u"""---
 git_remote:             YOUR GITHUB REPO URL
 
 ftp_server:             YOUR FTP SERVER

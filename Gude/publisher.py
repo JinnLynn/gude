@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import os,shutil,codecs
+import os, shutil, codecs
 
 import yaml
 
@@ -15,6 +15,7 @@ PT_UNKNOWN = 'UNKNOWN'
 PTMAP = {'git': PT_GIT, 'gitftp': PT_GITFTP}
 
 class Publisher(object):
+
     def __init__(self, site):
         self.site = site
 

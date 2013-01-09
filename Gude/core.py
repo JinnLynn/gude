@@ -182,21 +182,20 @@ class Site:
             pass
         #map(lambda a: print('   ' + a.source), self.articles.articles)
 
-
     # 生成地址 默认: 文件夹
     def generateUrl(self, *parts, **kwargs):
         isfile = kwargs.get('isfile', False)   # 是文件？
         page = kwargs.get('page', 1)           # 分页
         assert type(page) == int and page >= 1, 'page must be INT and >= 1. '
-        is_url_quoted = kwargs.get('quoted', False) # 地址已转换成url组件
-        site_url = self.siteUrl;
+        is_url_quoted = kwargs.get('quoted', False)  # 地址已转换成url组件
+        site_url = self.siteUrl
         try:
             sub_url = '/'.join(str(s) for s in parts if s)
-        except Exception, e:
+        except:
             sub_url = '/'.join(unicode(s) for s in parts if s)
         finally:
             sub_url = util.standardizePath(sub_url).strip('/')
-        
+
         if not is_url_quoted:
             sub_url = util.urlQuote(sub_url)
         if page != 1:
@@ -208,7 +207,7 @@ class Site:
 
     # 生成发布文件路径 默认: 在文件夹下生成index.html文件
     def generateDeployFilePath(self, *parts, **kwargs):
-        assign = kwargs.get('assign', False) # 指定了文件名
+        assign = kwargs.get('assign', False)  # 指定了文件名
         page = kwargs.get('page', 1)
         assert type(page) == int and page >= 1, 'page must be INT and >= 1. '
         deploy_file_path = self.deployPath
@@ -246,7 +245,7 @@ class Site:
         return self.lookup.get_template(util.tplFile(str(name)))
 
     # 获取设置
-    def getConfig(self, key, default = ''):
+    def getConfig(self, key, default=''):
         cfg = self.config.get(key, default)
         return default if cfg is None else cfg
 
@@ -309,14 +308,14 @@ class Site:
     # 默认layout
     @property
     def defaultLayout(self):
-        return self.getConfig('default_layout', 'post')  
+        return self.getConfig('default_layout', 'post')
 
     @property
     def siteDomain(self):
         default = 'http://localhost/'
         domain = self.getConfig('domain', default) if not self.isLocalMode else self.getConfig('local_domain', default)
         return '%s/' % domain.strip(' /')
-        
+
     @property
     def siteUrl(self):
         return self.productionEnvSiteUrl if not self.isLocalMode else self.localEnvSiteUrl
@@ -337,7 +336,7 @@ class Site:
         subdir = re.sub('//+', '/', subdir.strip('/'))
         if subdir:
             subdir += '/'
-        return '%s/%s' %(domain, subdir)
+        return '%s/%s' % (domain, subdir)
 
     @property
     def feedUrl(self):
@@ -475,7 +474,6 @@ class Gude(Application):
 
 
     @subcommand('build', help='build a new site.')
-    @true('-f', default=False, dest='overwrite')
     @true('-p', '--preview', default=False, dest='preview', help='start webserver after builded.')
     @true('-l', '--local', default=False, dest='localmode', help='build in local mode')
     @true('-i', '--info', default=False, dest='print_info', help='print export info')
