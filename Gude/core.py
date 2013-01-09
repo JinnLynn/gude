@@ -157,6 +157,7 @@ class Site:
             dst = cfg.get('dst', None)
             if not src or not dst:
                 continue
+            src = os.path.join('static', src)
             from_files = glob(src)
             if not len(from_files):
                 util.logWarning( "file '%s' is non-existent" % f )
