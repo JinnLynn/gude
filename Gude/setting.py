@@ -61,18 +61,19 @@ google_analytics_track_id:  YOUR GOOGLE ANALYTICS TRACK ID
 # 如果使用了第三方Feed托管服务，则将其产生的Feed地址配置于此，留空将使用本地默认
 feed_url:                   ~
 
-# 指定生成的文件名 src: 相对文章目录 dst: 相对发布目录
+# 指定生成的文件名 src: 相对content目录 dst: 相对deploy目录
 #designated:
 #    - src:      2000-01-01-projects.md
 #      dst:      projects/index.html
 
 content_filter:         [Shortcode, CenterElement]
 
-# 拷贝文件 src: 相对站点工作目录 dst: 相对发布目录
+# 拷贝文件 src: 相对站点static目录 dst: 相对deploy目录
+# 支持通配符
 #file_copy:
-#    - src:      static/favicon.ico
+#    - src:      favicon.ico
 #      dst:      assets/images/favicon.ico
-#    - src:      static/uploads/*
+#    - src:      uploads/*
 #      dst:      assets/uploads/
 
 # 本地模式
