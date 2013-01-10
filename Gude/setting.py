@@ -96,6 +96,7 @@ github_project_page:    no
 git_remote:             YOUR GITHUB REPO URL
 
 ftp_server:             YOUR FTP SERVER
+ftp_subdirectory:       YOUR FTP SERVER SUBDIRECTORY
 ftp_usr:                YOUR FTP USER
 ftp_pwd:                YOUR FTP PASSWORD
 ...

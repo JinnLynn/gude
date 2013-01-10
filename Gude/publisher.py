@@ -61,11 +61,12 @@ class Publisher(object):
         print 'publish [%s %s] %s.' % (remote, self.publishBranch, 'success' if ret == 0 else 'fail')
 
     def publishByGitFtp(self, force=False):
-
         server = self.site.getConfig('ftp_server')
+        subdir = self.site.getConfig('ftp_subdirectory')
         usr = self.site.getConfig('ftp_usr')
         pwd = self.site.getConfig('ftp_pwd')
-        server_str = '-u "%s" -p "%s" "%s"' % (usr, pwd, server)
+        server_path = os.path.join(server, subdir)
+        server_str = '-u "%s" -p "%s" "%s"' % (usr, pwd, server_path)
         option = ''
         if force:
             # 强制 先上传当前的GIT SHA1到log(防止此时服务器是未git ftp init的状态)
