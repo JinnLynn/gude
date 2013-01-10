@@ -479,7 +479,6 @@ class Gude(Application):
     @true('-l', '--local', default=False, dest='localmode', help='build in local mode')
     @true('-i', '--info', default=False, dest='print_info', help='print export info')
     def build(self, args):
-        util.logAlways('Start building...')
         if args.print_info:
             util.logLevelSet(logging.NOTSET)
         self.site.isLocalMode = args.localmode
@@ -487,7 +486,6 @@ class Gude(Application):
         self.startBuild()
         if args.preview:
             self.startServer(DEFAULT_SERVER_PORT)
-        util.logAlways('Site build success.')
 
     @subcommand('add', help='add new article')
     @store('-t', default='Untitled', dest='title', help='article title')
@@ -533,9 +531,12 @@ class Gude(Application):
 
     @subcommand('publish', help='Publish the website')
     @true('-c', default=False, dest='clean', help='Clean git repo')
-    @true('-f', '--force', default=False, dest='force', help="force update")
+    @true('-f', '--force', default=False, dest='force', help='force update')
+    @true('-b', '--build', default=False, dest='build', help='build site before publish')
     def publish(self, args):
         self.site.checkDir()
+        if args.build:
+            self.startBuild()
         publisher = Publisher(self.site)
         os.chdir(self.site.deployPath)
         if args.clean:
@@ -580,7 +581,9 @@ class Gude(Application):
         print 'remote backup [%s %s] %s.' % (server, branch, 'success' if ret == 0 else 'fail')
 
     def startBuild(self):
+        util.logAlways('Start building...')
         self.site.build()
+        util.logAlways('Site build success.')
 
     def startServer(self, port):
         try:
