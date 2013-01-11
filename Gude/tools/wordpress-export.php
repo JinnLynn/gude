@@ -60,8 +60,8 @@ while ($query->have_posts()) {
     $title = get_the_title();
     $date = get_the_date('Y-m-d H:m:s');
     $author = get_the_author();
-    $content = get_the_content();
-    if (!EXPORT_ORIGINAL) {
+    $content = $post->post_content;
+    if (EXPORT_ORIGINAL != fasle) {
         $content = apply_filters('the_content', $content);
         $content = str_replace(']]>', ']]&gt;', $content);
     }
