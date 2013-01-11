@@ -3,7 +3,7 @@
 
 <%block name="head_title">${article.title} at ${site.siteTitle}</%block>
 
-<div id="post-${article.unique}" class="post post-single">
+<div id="post-${article.unique}" class="post post-single post-${article.status}">
     <div class="entry-head">
         <h1>${article.title}</h1>
         <p class="entry-date" title="${article.date}">
@@ -24,6 +24,6 @@ ${article.content | trim}
             <li class="entry-comments">with <a href="${article.permalink}#disqus_thread">comments</a></li>
         </ul>  
     </div><!-- .entry-meta -->
-</div><!-- #post-226 -->
+</div><!-- #post-${article.unique} -->
 
 ${site.getDisqusCommentCode(article.permalink)}

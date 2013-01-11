@@ -341,6 +341,28 @@ DEFAULT
     clear: left;
     padding: 5px 0 0 0;
 }
+
+.post-draft .entry-head h1:before,
+.post-sticky .entry-head h1:before {
+    font-family: "FontAwesome";
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    text-decoration: inherit;
+    font-size:1.0em;
+    vertical-align: middle;
+    line-height:1.0em;
+    padding: 0 8px 0 0;
+}
+
+.post-draft .entry-head h1:before { 
+    content: "\f044";
+}
+
+.post-sticky .entry-head h1:before { 
+    content: "\f097"; /* 097 */
+}
+
 .entry-head h1 {
     /*font-family:"PT Serif", "黑体";*/
     color: #404040;
@@ -367,7 +389,7 @@ DEFAULT
 }
 .entry-head h1 a:hover { 
     text-decoration: none;
-    color:#1863a1; 
+    color:#000; 
 }
 .entry-date {
     margin: 0;
@@ -1192,41 +1214,22 @@ div#post-list-viewer .panel li { width: 250px }
 
 /* page
 -------------------------------------------------------------- */
-.page {
-    position: relative;
-    overflow: visible;
-    padding: 10px 20px 20px 50px;
-    line-height: 180%;
+.page { margin-left: 15px; }
+.page .entry-date { display: none; }
+.page .entry-head h1 { 
+    font-size: 40px; 
+    text-overflow: clip;
 }
-.page h1,
-.page h2,
-.page h3,
-.page h4,
-.page h5,
-.page h6 {
-    font-weight: bold;
-    line-height: 180%;
-    margin: 15px 0 0 0;
+.page .entry-head h1 small {
+    color: #ccc;
+    font-size: 16px;
+    font-weight:normal;
+    text-shadow:none;
+    padding-left:15px;
+    letter-spacing:0px;
 }
-.page h1 {
-    font-size: 44px;
-    clear: both;
-    margin: -10px 0 20px -30px;
-    border-bottom: 1px solid #ccc;
-    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75);
-}
-.page h2 { font-size: 24px; }
-.page h3 { font-size: 22px; }
-.page h4 { font-size: 20px; }
-.page h5 { font-size: 18px; }
-.page h6 { font-size: 16px; }
-.page a,
-.page a:visited { 
-    color: #404040;   
-}
-.page a:hover { 
-    text-decoration: none;
-    color:#1863a1; 
+.page .entry-content {
+    padding-left: 30px;
 }
 
 /* projects

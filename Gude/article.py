@@ -152,10 +152,6 @@ class Article(object):
         self.content = self.contentFilter(self.content)
         self.summary = self.contentFilter(self.summary) if self.summary else self.content
 
-        # 草稿 标题加前缀
-        if self.isDraft():
-            self.title = '__DRAFT__ ' + self.title
-
         return True
 
     # 文章日期是否有效
