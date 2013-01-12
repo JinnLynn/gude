@@ -2,7 +2,7 @@
 <%inherit file="base.mako"/>
 <%block name="head_title">Tag ${bundle.name} at ${site.siteTitle}</%block>
 % for article in articles:
-<div id="post-${article.unique}" class="post post-list">
+<div id="post-${article.unique}" class="post post-list post-${article.status}">
     <div class="entry-head">
         <h1><a href="${article.permalink}" title="${article.title}" rel="bookmark">${article.title}</a></h1>
         <p class="entry-date" title="${article.date.strftime('%Y-%m-%d %H:%M:%S')}">

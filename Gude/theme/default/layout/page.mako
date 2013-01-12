@@ -1,7 +1,7 @@
 <%namespace name="funcs" file="functions.mako"/>
 <%inherit file="base.mako"/>
 <%block name="head_title">${article.title} at ${site.siteTitle}</%block>
-<div id="post-${article.unique}" class="post page post-${article.status} single-project">
+<div id="post-${article.unique}" class="page post-${article.status}">
     <div class="entry-head">
         <h1>${article.title}<small>${article.getCustomData('desc')}</small></h1>
         <p class="entry-date" title="${article.date}">

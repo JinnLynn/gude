@@ -8,25 +8,11 @@ Author URI: http://jeeker.net/
 */
 
 @font-face {
-    font-family: 'PT Sans';
-    src: url('fonts/pt_sans-web-regular-webfont.eot');
-    src: url('fonts/pt_sans-web-regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('fonts/pt_sans-web-regular-webfont.woff') format('woff'),
-         url('fonts/pt_sans-web-regular-webfont.ttf') format('truetype'),
-         url('fonts/pt_sans-web-regular-webfont.svg#PTSansRegular') format('svg');
-    font-weight: normal;
-    font-style: normal;
-
-}
-
-@font-face {
     font-family: 'FontAwesome';
     src: url('fonts/fontawesome-webfont.eot');
-    src: url('fonts/fontawesome-webfont.eot?#iefix') format('embedded-opentype'), 
-         url('fonts/fontawesome-webfont.woff') format('woff'), 
-         url('fonts/fontawesome-webfont.ttf') format('truetype'), 
-         url('fonts/fontawesome-webfont.svgz#FontAwesomeRegular') format('svg'), 
-         url('fonts/fontawesome-webfont.svg#FontAwesomeRegular') format('svg');
+    src: url('fonts/fontawesome-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/fontawesome-webfont.woff') format('woff'),
+         url('fonts/fontawesome-webfont.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -342,8 +328,8 @@ DEFAULT
     padding: 5px 0 0 0;
 }
 
-.post-draft .entry-head h1:before,
-.post-sticky .entry-head h1:before {
+.post-draft .entry-head h1 a:before,
+.post-sticky .entry-head h1 a:before {
     font-family: "FontAwesome";
     font-weight: normal;
     font-style: normal;
@@ -355,16 +341,15 @@ DEFAULT
     padding: 0 8px 0 0;
 }
 
-.post-draft .entry-head h1:before { 
+.post-draft .entry-head h1 a:before { 
     content: "\f044";
 }
 
-.post-sticky .entry-head h1:before { 
+.post-sticky .entry-head h1 a:before { 
     content: "\f097"; /* 097 */
 }
 
 .entry-head h1 {
-    /*font-family:"PT Serif", "黑体";*/
     color: #404040;
     font-size: 32px;
     letter-spacing: -1px;
@@ -419,7 +404,7 @@ DEFAULT
     text-transform: uppercase;
     font-size: 13px;
     font-weight: normal;
-    font-family: "PT Sans", sans-serif;
+    font-family: Arial, sans-serif;
 }
 .entry-date .day {
     display: block;
@@ -888,46 +873,13 @@ div.entry-note { margin: 30px 0 0 30px; }
 
 /* pagenavi
 -------------------------------------------------------------- */
-.pagenavi {
-    margin: 0 0 10px 0;
-}
-.pagenavi li {
-    display: inline;
-    margin: 0 2px;
-    color: #aaa;
-}
-.pagenavi li.pages {
-    border: 1px solid #ccc;
-    padding: 2px 4px;
-}
-.pagenavi li.extend { border: 0; }
-.pagenavi li.current {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    padding: 2px 4px;
-}
-.pagenavi li a,
-.pagenavi li a:visited {
-    padding: 2px 4px;
-    border: 1px solid #ccc;
-    color: #aaa;
-    -webkit-transition: all .4s ease-in-out;
-    -moz-transition: all .4s ease-in-out;
-    -ms-transition: all .4s ease-in-out;
-    -o-transition: all .4s ease-in-out;
-    transition: all .4s ease-in-out;
-}
-.pagenavi li a:hover {
-    color: #000;
-    background-color: #fff;
-}
 #pagenavi {
     position: relative;
     margin: 0 0 10px 25px;
     display: block;
     text-align: center;
     font-weight: bold;
-    font-family:"PT Sans", sans-serif;
+    font-family:"Arial", sans-serif;
     text-transform: uppercase;
     /*line-height:20px;*/
 }
@@ -939,28 +891,43 @@ div.entry-note { margin: 30px 0 0 30px; }
 #pagenavi .nav-older {
     position: absolute;
     left: 0;
+    top:2px;
     padding: 0 0 0 23px;
     text-align: left;
-    vertical-align: middle;
+    vertical-align: baseline;
     display: inline-block;
+}
+#pagenavi .nav-older:before {
+    font-family: "FontAwesome";
+    font-weight: normal;
+    font-style: normal;
+    display: inline-block;
+    text-decoration: inherit;
+    font-size: 1.0em;
+    vertical-align: baseline;
+    line-height: 1.0em;
+    padding: 0 5px 0 0;
+    content: "\f060";
 }
 #pagenavi .nav-newer {
     position: absolute;
     right: 0;
     padding: 0 25px 0 0;
-    vertical-align: middle;
+    vertical-align: baseline;
     display: inline-block;
 }
-
-#pagenavi i {
+#pagenavi .nav-newer:after {
+    font-family: "FontAwesome";
+    font-weight: normal;
+    font-style: normal;
     display: inline-block;
-    font-size: 13px;
-    vertical-align: middle;
+    text-decoration: inherit;
+    font-size: 1.0em;
+    vertical-align: baseline;
+    line-height: 1.0em;
+    padding: 0 0 0 5px;
+    content: "\f061";
 }
-#pagenavi .nav-newer i {
-    padding:0 0 0 5px;
-}
-
 
 /* comment
 -------------------------------------------------------------- */
@@ -1214,14 +1181,19 @@ div#post-list-viewer .panel li { width: 250px }
 
 /* page
 -------------------------------------------------------------- */
-.page { margin-left: 15px; }
+.page {
+    position: relative;
+    overflow: visible;
+    padding: 0 0 0 30px;
+}
+
 .page .entry-date { display: none; }
 .page .entry-head h1 { 
     font-size: 40px; 
     text-overflow: clip;
 }
 .page .entry-head h1 small {
-    color: #ccc;
+    color: #CCC;
     font-size: 16px;
     font-weight:normal;
     text-shadow:none;
@@ -1231,6 +1203,7 @@ div#post-list-viewer .panel li { width: 250px }
 .page .entry-content {
     padding-left: 30px;
 }
+
 
 /* projects
 -------------------------------------------------------------- */
@@ -1245,35 +1218,56 @@ div#post-list-viewer .panel li { width: 250px }
 .projects .entry-content a { color: #000; }
 .projects .entry-content a:hover { color: #FFF; }
 
-/* single project
+/* main page
 -------------------------------------------------------------- */
-.single-project { margin-left: 15px; }
-.single-project .entry-date { display: none; }
-.single-project .entry-head h1 { 
-    font-size: 40px; 
-    text-overflow: clip;
+.page-main {
+    position: relative;
+    overflow: visible;
+    padding: 10px 20px 20px 50px;
+    line-height: 180%;
 }
-.single-project .entry-head h1 small {
-    color: #CCC;
-    font-size: 16px;
-    font-weight:normal;
-    text-shadow:none;
-    padding-left:15px;
-    letter-spacing:0px;
+.page-main h1,
+.page-main h2,
+.page-main h3,
+.page-main h4,
+.page-main h5,
+.page-main h6 {
+    font-weight: bold;
+    line-height: 180%;
+    margin: 15px 0 0 0;
 }
-.single-project .entry-content {
-    padding-left: 30px;
+.page-main h1 {
+    font-size: 44px;
+    clear: both;
+    margin: -10px 0 20px -30px;
+    border-bottom: 1px solid #ccc;
+    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.75);
 }
+.page-main h2 { font-size: 24px; }
+.page-main h3 { font-size: 22px; }
+.page-main h4 { font-size: 20px; }
+.page-main h5 { font-size: 18px; }
+.page-main h6 { font-size: 16px; }
+.page-main a,
+.page-main a:visited { 
+    color: #404040;   
+}
+
 
 
 /* archives
 -------------------------------------------------------------- */
+.archives a:hover { 
+    text-decoration: none;
+    color:#1863a1; 
+}
 .archives h2 {
     font-size: 40px;
     display: inline; 
     position: relative;
     float:left;
     margin: 40px 0 0 0;
+    color: #404040;
 }
 .archives h4 {
     font-size: 24px;
@@ -1303,7 +1297,7 @@ div#post-list-viewer .panel li { width: 250px }
     left: 0px;
     top: 8px;
     color: #ccc;
-    font-family: "PT Sans", sans-serif;
+    font-family: "Arial", sans-serif;
 }
 .archives ul li span.cate,
 .archives ul li span.cate a,
@@ -1411,19 +1405,19 @@ span.fun { color: red }  /* a function name */
 }
 [class^="icon-"]:before, 
 [class*=" icon-"]:before {
-    font-family: FontAwesome;
+    font-family: "FontAwesome";
     font-weight: normal;
     font-style: normal;
     display: inline-block;
     text-decoration: inherit;
-    font-size:1.3em;
+    font-size:1.5em;
     vertical-align: middle;
     line-height:0.9em;
     padding: 0 4px 0 0;
 }
 .btn-large[class^="icon-"]:before, 
 .btn-large[class*=" icon-"]:before {
-    line-height:0.7em;
+    line-height:0.5em;
     padding: 0 8px 0 0;
 }
 
@@ -1651,8 +1645,49 @@ span.fun { color: red }  /* a function name */
 .icon-sitemap:before              { content: "\f0e8"; }
 .icon-umbrella:before             { content: "\f0e9"; }
 .icon-paste:before                { content: "\f0ea"; }
+.icon-lightbulb:before            { content: "\f0eb"; }
+.icon-exchange:before             { content: "\f0ec"; }
+.icon-cloud-download:before       { content: "\f0ed"; }
+.icon-cloud-upload:before         { content: "\f0ee"; }
 
-.icon-user-md:before              { content: "\f200"; }
+.icon-user-md:before              { content: "\f0f0"; }
+.icon-stethoscope:before          { content: "\f0f1"; }
+.icon-suitcase:before             { content: "\f0f2"; }
+.icon-bell-alt:before             { content: "\f0f3"; }
+.icon-coffee:before               { content: "\f0f4"; }
+.icon-food:before                 { content: "\f0f5"; }
+.icon-file-alt:before             { content: "\f0f6"; }
+.icon-building:before             { content: "\f0f7"; }
+.icon-hospital:before             { content: "\f0f8"; }
+.icon-ambulance:before            { content: "\f0f9"; }
+.icon-medkit:before               { content: "\f0fa"; }
+.icon-fighter-jet:before          { content: "\f0fb"; }
+.icon-beer:before                 { content: "\f0fc"; }
+.icon-h-sign:before               { content: "\f0fd"; }
+.icon-plus-sign-alt:before        { content: "\f0fe"; }
+
+.icon-double-angle-left:before    { content: "\f100"; }
+.icon-double-angle-right:before   { content: "\f101"; }
+.icon-double-angle-up:before      { content: "\f102"; }
+.icon-double-angle-down:before    { content: "\f103"; }
+.icon-angle-left:before           { content: "\f104"; }
+.icon-angle-right:before          { content: "\f105"; }
+.icon-angle-up:before             { content: "\f106"; }
+.icon-angle-down:before           { content: "\f107"; }
+.icon-desktop:before              { content: "\f108"; }
+.icon-laptop:before               { content: "\f109"; }
+.icon-tablet:before               { content: "\f10a"; }
+.icon-mobile-phone:before         { content: "\f10b"; }
+.icon-circle-blank:before         { content: "\f10c"; }
+.icon-quote-left:before           { content: "\f10d"; }
+.icon-quote-right:before          { content: "\f10e"; }
+
+.icon-spinner:before              { content: "\f110"; }
+.icon-circle:before               { content: "\f111"; }
+.icon-reply:before                { content: "\f112"; }
+.icon-github-alt:before           { content: "\f113"; }
+.icon-folder-close-alt:before     { content: "\f114"; }
+.icon-folder-open-alt:before      { content: "\f115"; }
 
 /* HACK: IE
 -------------------------------------------------------------- */
