@@ -7,35 +7,27 @@ import yaml
 import util
 from setting import *
 
-PT_GIT = 'GIT'
-PT_GITFTP = 'GITFTP'
-PT_RSYNC = 'RSYNC'
-#PT_FTP = 'FTP' # 不支持
-PT_UNKNOWN = 'UNKNOWN'
-
-PTMAP = { 'git'     : PT_GIT, 
-          'gitftp'  : PT_GITFTP,
-          'rsync'   : PT_RSYNC
-        }
-
 class Publisher(object):
 
     def __init__(self, site):
         self.site = site
 
     def clean(self):
-        pub_type = self.getPublishType()
-        if pub_type == PT_GIT or pub_type == PT_GITFTP:
-            self.forceInitGitRepo()
+        self.forceInitGitRepo()
         self.publish(force=True)
 
     def publish(self, **kwargs):
-        pub_type = self.getPublishType()
-        print 'Publish Type: %s' % pub_type
-        force = kwargs.get('force', False)
-
         if not self.checkGit():
             return
+
+        pub_type = self.getPublishType()
+        print('Publish Type: %s' % pub_type)
+        force = kwargs.get('force', False)
+
+        pub_map = { 'git'       : lambda: self.publishByGit(force),
+                    'gitftp'    : lambda: self.publishByGitFtp(force),
+                    'rsync'     : lambda: self.publishByRsync()
+        }
 
         # 准备分支
         is_cur_branch = False
@@ -46,14 +38,10 @@ class Publisher(object):
         if not is_cur_branch:
             os.system('git branch -M %s > /dev/null' % self.publishBranch)
 
-        if pub_type == PT_GIT:
-            self.publishByGit(force=force)
-        elif pub_type == PT_GITFTP:
-            self.publishByGitFtp(force=force)
-        elif pub_type == PT_RSYNC:
-            self.publishByRsync()
+        if pub_map.has_key(pub_type):
+            pub_map[pub_type]()
         else:
-            print 'unsupported publish type.'
+            print('unsupported publish type.')
 
     def publishByGit(self, force=False):
         remote = self.site.getConfig('git_remote');
@@ -131,11 +119,7 @@ class Publisher(object):
         return False
 
     def getPublishType(self):
-        config = self.site.getConfig('publish_type', 'none').lower()
-        for key in PTMAP.keys():
-            if key == config:
-                return PTMAP[key]
-        return PT_UNKNOWN
+        return self.site.getConfig('publish_type', 'none').lower()
 
     @property
     def publishBranch(self):
