@@ -9,10 +9,14 @@ from setting import *
 
 PT_GIT = 'GIT'
 PT_GITFTP = 'GITFTP'
+PT_RSYNC = 'RSYNC'
 #PT_FTP = 'FTP' # 不支持
 PT_UNKNOWN = 'UNKNOWN'
 
-PTMAP = {'git': PT_GIT, 'gitftp': PT_GITFTP}
+PTMAP = { 'git'     : PT_GIT, 
+          'gitftp'  : PT_GITFTP,
+          'rsync'   : PT_RSYNC
+        }
 
 class Publisher(object):
 
@@ -46,6 +50,8 @@ class Publisher(object):
             self.publishByGit(force=force)
         elif pub_type == PT_GITFTP:
             self.publishByGitFtp(force=force)
+        elif pub_type == PT_RSYNC:
+            self.publishByRsync()
         else:
             print 'unsupported publish type.'
 
@@ -75,6 +81,18 @@ class Publisher(object):
             option = '-a'
         ret = os.system('git ftp push %s %s' % (option, server_str))
         print 'publish [%s] %s.' % (server, 'success' if ret == 0 else 'fail')
+
+    def publishByRsync(self):
+        data = { 'opt'      : '-av --force --ignore-errors --delete --exclude ".git"',
+                 'server'   : self.site.getConfig('rsync_server'),
+                 'subdir'   : self.site.getConfig('rsync_subdirectory'),
+                 'usr'      : self.site.getConfig('rsync_usr'),
+                 'sshkey'   : self.site.getConfig('rsync_sshkey'),
+                 'src'      : self.site.deployPath.rstrip('/') + '/'
+                }
+        cmd = 'rsync {opt} -e "ssh -i {sshkey}" {src} {usr}@{server}:{subdir}'.format(**data)
+        ret = os.system(cmd)
+        print('publish [%s] %s.' % (data['server'], 'success' if ret == 0 else 'fail'))
 
     def checkGit(self):
         if not self.isCommandExists('git'):
