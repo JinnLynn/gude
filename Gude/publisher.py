@@ -51,8 +51,9 @@ class Publisher(object):
         
         option = '-u'
         option += '' if not force else 'f'
-        ret = os.system('git push %s "%s" %s' % (option, remote, self.publishBranch) )
-        print 'publish [%s %s] %s.' % (remote, self.publishBranch, 'success' if ret == 0 else 'fail')
+        cmd = 'git push %s "%s" %s' % (option, remote, self.publishBranch)
+        ret = os.system(cmd)
+        self.publishResult(ret, cmd, '%s %s' % (remote, self.publishBranch))
 
     def publishByGitFtp(self, force=False):
         server = self.site.getConfig('ftp_server')
@@ -67,8 +68,9 @@ class Publisher(object):
             #      然后上传所有文件
             os.system('git ftp catchup %s' % server_str)
             option = '-a'
-        ret = os.system('git ftp push %s %s' % (option, server_str))
-        print 'publish [%s] %s.' % (server, 'success' if ret == 0 else 'fail')
+        cmd = 'git ftp push %s %s' % (option, server_str)
+        ret = os.system(cmd)
+        self.publishResult(ret, cmd, server)
 
     def publishByRsync(self):
         data = { 'opt'      : '-av --force --ignore-errors --delete --exclude ".git"',
@@ -80,7 +82,14 @@ class Publisher(object):
                 }
         cmd = 'rsync {opt} -e "ssh -i {sshkey}" {src} {usr}@{server}:{subdir}'.format(**data)
         ret = os.system(cmd)
-        print('publish [%s] %s.' % (data['server'], 'success' if ret == 0 else 'fail'))
+        self.publishResult(ret, cmd, data['server'])
+
+    def publishResult(self, ret, cmd, server):
+        data = { 'server': server, 'cmd': cmd }
+        if ret == 0:
+            print( 'publish [{server}] success'.format(**data) )
+        else:
+            print( 'publish [{server}] fail. command: {cmd}'.format(**data) )
 
     def checkGit(self):
         if not self.isCommandExists('git'):
