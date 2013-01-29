@@ -24,4 +24,4 @@ ${article.content}
     </div><!-- .entry-meta -->
 </div><!-- #post-226 -->
 
-${site.getDisqusCommentCode(article.permalink)}
+${site.getCommentCode(article.permalink)}

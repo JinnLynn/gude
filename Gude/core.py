@@ -405,21 +405,22 @@ class Site:
             return '<!-- google_analytics_track_id is not configured. -->'
         return util.parseTemplateString(SITE_TRACK_TEMPLATE, track_id)
 
-    # disqus 评论代码
-    def getDisqusCommentCode(self, permalink = None):
-        disgus_shortname = self.getConfig('disgus_shortname')
-        if not disgus_shortname:
-            return '<!-- disgus_shortname is not configured. -->'
-        if permalink:
-            disqus_url = "var disqus_url = '%s';" % permalink;
-        return util.parseTemplateString(DISGUS_COMMENT_TEMPLATE, (disgus_shortname, disqus_url))
-
-    # disqus 评论计数代码
-    def getDisqusCommentCountCode(self):
-        disgus_shortname = self.getConfig('disgus_shortname')
-        if not disgus_shortname:
-            return '<!-- disgus_shortname is not configured. -->'
-        return util.parseTemplateString(DISGUS_COMMENT_COUNT_TEMPLATE, disgus_shortname)
+    # 评论服务类型 多说 或 disqus
+    @property
+    def commentService(self):
+        service = self.getConfig('comment_service', 'duoshuo').lower()
+        return service if service in COMMENT_TEMPLATE.keys() else 'duoshuo'
+        
+    # 评论代码
+    def getCommentCode(self, permalink = None):
+        shortname = self.getConfig('comment_service_shortname')
+        if not shortname:
+            return '<!-- comment_service_shortname is not configured. -->'
+        if not COMMENT_TEMPLATE.has_key(self.commentService):
+            return '<!-- comment template no found. -->'
+        data = { 'shortname': shortname, 'permalink': '' if not permalink else permalink }
+        output = COMMENT_TEMPLATE[self.commentService].format(**data)
+        return output
 
     def getHeaderMenu(self):
         menus = [{'title': 'Home', 'url': self.siteUrl}]

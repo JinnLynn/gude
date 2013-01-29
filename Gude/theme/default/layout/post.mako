@@ -26,4 +26,4 @@ ${article.content | trim}
     </div><!-- .entry-meta -->
 </div><!-- #post-${article.unique} -->
 
-${site.getDisqusCommentCode(article.permalink)}
+${site.getCommentCode(article.permalink)}

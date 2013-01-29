@@ -74,7 +74,5 @@ ${self.body()}
 
 ${site.getSiteTrackCode()}
 
-${site.getDisqusCommentCountCode()}
-
 </body>
 </html>
