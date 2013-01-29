@@ -229,7 +229,10 @@ class Site:
         file_hash = buf[org_filepath] if org_filepath in buf.keys() else util.fileHash( org_filepath )
         buf[org_filepath] = file_hash
         filepath = os.path.join('assets', filepath)
-        return self.siteUrl + filepath + '?' + file_hash[-5:]
+        url = os.path.join(self.siteUrl, filepath)
+        if file_hash:
+            url += '?' + file_hash[-5:]
+        return url 
 
     def getPathInSite(self, filename):
         return os.path.join(SITE_PATH, filename)

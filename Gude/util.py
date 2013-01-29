@@ -29,7 +29,7 @@ toUTCISO8601 = lambda d = None: toUTC(d).strftime('%Y-%m-%dT%H:%M:%SZ')
 timestamp = lambda d = None: int( time.time() if not isinstance(d, datetime) else time.mktime(d.timetuple()) )
 
 # 文件hash
-fileHash = lambda f: '%d' % ( 0 if not os.path.isfile(f) else int (os.stat(f).st_mtime) )
+fileHash = lambda f: '{}'.format( '' if not os.path.isfile(f) else int (os.stat(f).st_mtime) )
 
 # 文件创建时间
 fileCreateDate = lambda f: datetime.now() if not os.path.isfile(f) else datetime.fromtimestamp( int( os.stat(f).st_ctime ) )
