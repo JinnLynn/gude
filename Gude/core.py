@@ -160,7 +160,7 @@ class Site:
             src = os.path.join('static', src)
             from_files = glob(src)
             if not len(from_files):
-                util.logWarning( "file '%s' is non-existent" % f )
+                util.logWarning( "file '%s' is non-existent" % src )
                 continue
             to_file = os.path.join(self.deployPath, dst) # 保留指定的文件大小写 不能用generateDeployFilePath
             if os.path.exists(to_file) and not os.path.isdir(to_file):
