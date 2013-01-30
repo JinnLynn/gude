@@ -368,8 +368,9 @@ class Site:
         return self.getConfig('github_project_page', False)
 
     @property
-    def googleSearchSiteDomain(self):
-        return re.sub('^.*://+', '', self.siteDomain).strip('/')
+    def siteNetworkLocation(self):
+        #return re.sub('^.*://+', '', self.siteDomain).strip('/')
+        return urlparse.urlparse(self.siteUrl).netloc
 
     # 相对原始文章目录的路径
     def getRelativePathWithArticle(self, abspath):

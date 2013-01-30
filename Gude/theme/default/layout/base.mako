@@ -36,7 +36,7 @@
             <li id="tool-search">
                 <form action="http://google.com/search" method="get">
                     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-                    <input type="hidden" name="q" value="site:${site.googleSearchSiteDomain}" />
+                    <input type="hidden" name="q" value="site:${site.siteNetworkLocation}" />
                 </form>
             </li>
         </ul>
