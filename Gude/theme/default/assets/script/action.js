@@ -178,10 +178,9 @@
                 }
             }
         });
-    });
 
-    $(window).load(function() {
-        $(document).jContentResize();
+        //使外链在新窗口打开
+        $("a:not([href*='" + window.location.host + "'])").filter("a[href^='http']").attr("target", "_blank");
     });
 
 })(jQuery);
