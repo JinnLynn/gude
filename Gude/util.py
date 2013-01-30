@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import sys, os, re, urllib, codecs, logging
+import sys, os, re, urllib, codecs, logging, shutil
 from datetime import datetime
 import time
 
@@ -76,6 +76,25 @@ def getRelativePath(abspath):
     assert abspath.find(SITE_PATH) == 0, 'path error. %s' % abspath
     return abspath[len(SITE_PATH)+1:]
 
+# 拷贝文件树 shutil.copytree当拷贝的目标文件夹内已经包含了需拷贝的文件夹时会出错
+def copytree(src, dst):
+    names = os.listdir(src)
+    if not os.path.isdir(dst):
+        os.makedirs(dst)
+    for name in names:
+        srcname = os.path.join(src, name)
+        dstname = os.path.join(dst, name)
+        try:
+            if os.path.isdir(srcname):
+                copytree(srcname, dstname)
+            else:
+                shutil.copy2(srcname, dstname)
+        except Exception, e:
+            print(e)
+    try:
+        shutil.copystat(src, dst)
+    except Exception, e:
+        print(e)
 
 # 日志处理
 def logInit():
