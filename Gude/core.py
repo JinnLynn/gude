@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys, os, shutil, re, urllib, logging
+import urlparse
 from datetime import datetime
 from glob import glob
 
@@ -428,7 +429,12 @@ class Site:
     def getHeaderMenu(self):
         menus = [{'title': 'Home', 'url': self.siteUrl}]
         menus.extend( self.getConfig('header_menu', []) )
+        for menu in menus:
+            menu['url'] = self.getAbsoluteUrl(menu['url'])
         return menus
+
+    def getAbsoluteUrl(self, relative_url):
+        return urlparse.urljoin(self.siteUrl, relative_url)
 
 class Gude(Application):
     ARTICLE_PATH = lambda f: os.path.join(self.getArticlePath(), f)
