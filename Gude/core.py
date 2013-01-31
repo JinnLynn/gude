@@ -417,14 +417,19 @@ class Site:
         return service if service in COMMENT_TEMPLATE.keys() else 'duoshuo'
         
     # 评论代码
-    def getCommentCode(self, permalink = None):
+    def getCommentCode(self, data):
         shortname = self.getConfig('comment_service_shortname')
         if not shortname:
             return '<!-- comment_service_shortname is not configured. -->'
         if not COMMENT_TEMPLATE.has_key(self.commentService):
             return '<!-- comment template no found. -->'
-        data = { 'shortname': shortname, 'permalink': '' if not permalink else permalink }
-        output = COMMENT_TEMPLATE[self.commentService].format(**data)
+        comment_data = { 'shortname'    : shortname,
+                         'permalink'    : '',
+                         'page-title'   : ''
+                        }
+        if isinstance(data, dict):
+            comment_data.update(data)
+        output = COMMENT_TEMPLATE[self.commentService].format(**comment_data)
         return output
 
     def getHeaderMenu(self):

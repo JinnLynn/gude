@@ -191,42 +191,39 @@ SITE_TRACK_TEMPLATE = """
 
 # disgus 评论
 DISGUS_COMMENT_TEMPLATE = """
-<div id="comments">
-<!-- disgus comment -->
+<!-- DISGUS Comment BEGIN -->
     <div id="disqus_thread"></div>
     <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments.</a></noscript>
     <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-<script type="text/javascript">
-    var disqus_shortname = '{shortname}';
-    (function() {{
-        var dsq = document.createElement('script'); 
-        dsq.type = 'text/javascript'; 
-        dsq.async = true;
-        dsq.src = 'http://'+ disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    }}());
-</script>
-</div><!-- #comments -->
+    <script type="text/javascript">
+        var disqus_shortname = '{shortname}';
+        (function() {{
+            var dsq = document.createElement('script'); 
+            dsq.type = 'text/javascript'; 
+            dsq.async = true;
+            dsq.src = 'http://'+ disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }}());
+    </script>
+<!-- DISGUS Comment END -->
 """
 
 # 多说评论
 DUOSHUO_COMMENT_TEMPLATE = """
-<div id="comments">
 <!-- Duoshuo Comment BEGIN -->
-    <div class="ds-thread"></div>
+    <div class="ds-thread" data-title="{page-title}"></div>
     <script type="text/javascript">
-    var duoshuoQuery = {{short_name:"{shortname}"}};
-    (function() {{
-        var ds = document.createElement('script');
-        ds.type = 'text/javascript';ds.async = true;
-        ds.src = 'http://static.duoshuo.com/embed.js';
-        ds.charset = 'UTF-8';
-        (document.getElementsByTagName('head')[0] 
-        || document.getElementsByTagName('body')[0]).appendChild(ds);
-    }})();
+        var duoshuoQuery = {{short_name:"{shortname}"}};
+        (function() {{
+            var ds = document.createElement('script');
+            ds.type = 'text/javascript';
+            ds.async = true;
+            ds.src = 'http://static.duoshuo.com/embed.js';
+            ds.charset = 'UTF-8';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+        }})();
     </script>
 <!-- Duoshuo Comment END -->
-</div><!-- #comments -->
 """
 
 COMMENT_TEMPLATE = { 'duoshuo'   : DUOSHUO_COMMENT_TEMPLATE,

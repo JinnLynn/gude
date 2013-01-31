@@ -19,9 +19,8 @@ ${article.content}
             <li class="entry-author">Posted by ${article.author}</li>
             <li class="entry-categories"> in ${funcs.outputCategoryList(article)}</li>
             <li class="entry-human-time-diff"> on ${article.date.strftime('%b %d, %Y')}</li>
-            <li class="entry-comments">with <a href="${article.permalink}#disqus_thread">comments</a></li>
+            <li class="entry-comments">with <a href="${article.permalink}#comments">Comments</a></li>
         </ul>  
     </div><!-- .entry-meta -->
 </div><!-- #post-226 -->
-
-${site.getCommentCode(article.permalink)}
+<div id="comments">${article.outputComments()}</div><!-- #comments -->

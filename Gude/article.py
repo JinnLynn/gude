@@ -252,6 +252,9 @@ class Article(object):
         more_link = '<a href="%s" class="%s">%s</a>' % (self.morePermalink, css, text)
         return self.summary + '\n' + format % more_link
 
+    def outputComments(self):
+        return self.site.getCommentCode({'page-title': self.title})
+
     def contentFilter(self, content):
         if self.isMarkdown:
             content = util.markdown(content)
