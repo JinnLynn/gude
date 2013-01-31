@@ -65,9 +65,7 @@ ${self.body()}
 </div><!-- #wrapper -->
 
 <!-- print javascript -->
-<script type="text/javascript" src="${site.getAsset('script/jquery.js')}"></script>
 <script type="text/javascript" src="${site.getAsset('script/action.js')}"></script>
-<script type="text/javascript" src="${site.getAsset('script/prettify.js')}"></script>
 <!--[if lt IE 9]>
 <script type='text/javascript' src='${site.getAsset('script/css3-mediaqueries.js')}'></script>
 <![endif]-->

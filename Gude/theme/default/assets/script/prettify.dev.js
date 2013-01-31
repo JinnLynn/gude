@@ -1664,9 +1664,11 @@ PR['registerLangHandler'](
   };
 })();
 
+/** USAGE
 if (typeof jQuery == 'undefined') {
   document.ready(function() { prettyPrint(); });
 }
 else {
   jQuery(document).ready(function() { prettyPrint(); });
 }
+*/
