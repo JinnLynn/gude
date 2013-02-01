@@ -1,6 +1,6 @@
 <%namespace name="funcs" file="functions.mako" />
 <%inherit file="base.mako"/>
-<%block name="head_title">Category ${bundle.name} at ${site.siteTitle}</%block>
+<%block name="head_title">Category ${bundle.name} - ${site.siteTitle}</%block>
 % for article in articles:
 <div id="post-${article.unique}" class="post post-list post-${article.status}">
     <div class="entry-head">

@@ -1,8 +1,6 @@
 <%namespace name="funcs" file="functions.mako"/>
 <%inherit file="base.mako"/>
-
-<%block name="head_title">${article.title} at ${site.siteTitle}</%block>
-
+<%block name="head_title">${article.title} - ${site.siteTitle}</%block>
 <div id="post-${article.unique}" class="post post-single post-${article.status}">
     <div class="entry-head">
         <h1>${article.title}</h1>

@@ -1,6 +1,6 @@
 <%namespace name="funcs" file="functions.mako" />
 <%inherit file="base.mako"/>
-<%block name="head_title">Archives at ${site.siteTitle}</%block>
+<%block name="head_title">Archives - ${site.siteTitle}</%block>
 <div class="page-main archives">
     <div class="entry-head"><h1>Blog Archives</h1></div>
     <div class="clear"></div>
