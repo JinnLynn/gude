@@ -154,7 +154,9 @@ window['PR_SHOULD_USE_CONTINUATION']=true;var prettyPrintOne;var prettyPrint;(fu
         prettyPrint();
 
         // 使外链在新窗口打开
-        $("a:not([href*='" + window.location.host + "'])").filter("a[href^='http']").attr("target", "_blank");
+        $(document).on("click", "a", function(){
+            $(this).filter(":not([href*='" + window.location.host + "'])").filter("[href^='http'],[href^='ftp']").attr("target", "_blank");
+        });
     });
 
 })(jQuery);
