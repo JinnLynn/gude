@@ -78,8 +78,8 @@ hr.breaking-line {
     position: absolute;
     font-size: 12px;
     line-height:150%;
-    top: 5px;
-    right: 20px;
+    top: -100px;
+    right: 10px;
     width:350px;
     border: 1px solid #C27B27;
     background-color: #FFF1AB;

@@ -829,7 +829,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|[!=]=?=?|\\#|%=?|&&?=?|\\(|\\*=?|[
         } else {
           // Stop C preprocessor declarations at an unclosed open comment
           shortcutStylePatterns.push(
-              [PR_COMMENT, /^#(?:(?:define|elif|else|endif|error|ifdef|include|ifndef|line|pragma|undef|warning)\b|[^\r\n]*)/,
+              [PR_COMMENT, /^#(?:(?:define|e(?:l|nd)if|else|error|ifn?def|include|line|pragma|undef|warning)\b|[^\r\n]*)/,
                null, '#']);
         }
         // #include <stdio.h>
@@ -883,6 +883,45 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|[!=]=?=?|\\#|%=?|&&?=?|\\(|\\*=?|[
     }
 
     shortcutStylePatterns.push([PR_PLAIN,       /^\s+/, null, ' \r\n\t\xA0']);
+
+    var punctuation =
+      // The Bash man page says
+
+      // A word is a sequence of characters considered as a single
+      // unit by GRUB. Words are separated by metacharacters,
+      // which are the following plus space, tab, and newline: { }
+      // | & $ ; < >
+      // ...
+      
+      // A word beginning with # causes that word and all remaining
+      // characters on that line to be ignored.
+
+      // which means that only a '#' after /(?:^|[{}|&$;<>\s])/ starts a
+      // comment but empirically
+      // $ echo {#}
+      // {#}
+      // $ echo \$#
+      // $#
+      // $ echo }#
+      // }#
+
+      // so /(?:^|[|&;<>\s])/ is more appropriate.
+
+      // http://gcc.gnu.org/onlinedocs/gcc-2.95.3/cpp_1.html#SEC3
+      // suggests that this definition is compatible with a
+      // default mode that tries to use a single token definition
+      // to recognize both bash/python style comments and C
+      // preprocessor directives.
+
+      // This definition of punctuation does not include # in the list of
+      // follow-on exclusions, so # will not be broken before if preceeded
+      // by a punctuation character.  We could try to exclude # after
+      // [|&;<>] but that doesn't seem to cause many major problems.
+      // If that does turn out to be a problem, we should change the below
+      // when hc is truthy to include # in the run of punctuation characters
+      // only when not followint [|&;<>].
+      /^.[^\s\w\.$@\'\"\`\/\\]*/;
+
     fallthroughStylePatterns.push(
         // TODO(mikesamuel): recognize non-latin letters and numerals in idents
         [PR_LITERAL,     /^@[a-z_$][a-z_$@0-9]*/i, null],
@@ -903,7 +942,7 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|[!=]=?=?|\\#|%=?|&&?=?|\\(|\\*=?|[
          null, '0123456789'],
         // Don't treat escaped quotes in bash as starting strings.  See issue 144.
         [PR_PLAIN,       /^\\[\s\S]?/, null],
-        [PR_PUNCTUATION, /^.[^\s\w\.$@\'\"\`\/\#\\]*/, null]);
+        [PR_PUNCTUATION, punctuation, null]);
 
     return createSimpleLexer(shortcutStylePatterns, fallthroughStylePatterns);
   }
@@ -1282,13 +1321,13 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|[!=]=?=?|\\#|%=?|&&?=?|\\(|\\*=?|[
           'keywords': SH_KEYWORDS,
           'hashComments': true,
           'multiLineStrings': true
-        }), ['bsh', 'csh', 'sh', 'bash']);
+        }), ['bsh', 'csh', 'sh']);
   registerLangHandler(sourceDecorator({
           'keywords': PYTHON_KEYWORDS,
           'hashComments': true,
           'multiLineStrings': true,
           'tripleQuotedStrings': true
-        }), ['cv', 'py', 'python']);
+        }), ['cv', 'py']);
   registerLangHandler(sourceDecorator({
           'keywords': PERL_KEYWORDS,
           'hashComments': true,
@@ -1300,12 +1339,12 @@ var REGEXP_PRECEDER_PATTERN = '(?:^^\\.?|[+-]|[!=]=?=?|\\#|%=?|&&?=?|\\(|\\*=?|[
           'hashComments': true,
           'multiLineStrings': true,
           'regexLiterals': true
-        }), ['rb', 'ruby']);
+        }), ['rb']);
   registerLangHandler(sourceDecorator({
           'keywords': JSCRIPT_KEYWORDS,
           'cStyleComments': true,
           'regexLiterals': true
-        }), ['js', 'javascript']);
+        }), ['js']);
   registerLangHandler(sourceDecorator({
           'keywords': COFFEE_KEYWORDS,
           'hashComments': 3,  // ### style block comments
@@ -1640,35 +1679,21 @@ PR['registerLangHandler'](
   ['applescript']
 );
 
-(function () {
-  var ie = !!(window.attachEvent && !window.opera);
-  var wk = /webkit\/(\d+)/i.test(navigator.userAgent) && (RegExp.$1 < 525);
-  var fn = [];
-  var run = function () { for (var i = 0; i < fn.length; i++) fn[i](); };
-  var d = document;
-  d.ready = function (f) {
-    if (!ie && !wk && d.addEventListener)
-      return d.addEventListener('DOMContentLoaded', f, false);
-    if (fn.push(f) > 1) return;
-    if (ie)
-      (function () {
-        try { d.documentElement.doScroll('left'); run(); }
-        catch (err) { setTimeout(arguments.callee, 0); }
-      })();
-
-    else if (wk)
-      var t = setInterval(function () {
-        if (/^(loaded|complete)$/.test(d.readyState))
-          clearInterval(t), run();
-      }, 0);
-  };
-})();
-
-/** USAGE
-if (typeof jQuery == 'undefined') {
-  document.ready(function() { prettyPrint(); });
-}
-else {
-  jQuery(document).ready(function() { prettyPrint(); });
-}
-*/
+PR['registerLangHandler'](
+  PR['createSimpleLexer'](
+    [
+      [PR['PR_PUNCTUATION'], /^[:|>?]+/, null, ':|>?'],
+      [PR['PR_DECLARATION'],  /^%(?:YAML|TAG)[^#\r\n]+/, null, '%'],
+      [PR['PR_TYPE'], /^[&]\S+/, null, '&'],
+      [PR['PR_TYPE'], /^!\S*/, null, '!'],
+      [PR['PR_STRING'], /^"(?:[^\\"]|\\.)*(?:"|$)/, null, '"'],
+      [PR['PR_STRING'], /^'(?:[^']|'')*(?:'|$)/, null, "'"],
+      [PR['PR_COMMENT'], /^#[^\r\n]*/, null, '#'],
+      [PR['PR_PLAIN'], /^\s+/, null, ' \t\r\n']
+    ],
+    [
+      [PR['PR_DECLARATION'], /^(?:---|\.\.\.)(?:[\r\n]|$)/],
+      [PR['PR_PUNCTUATION'], /^-/],
+      [PR['PR_KEYWORD'], /^\w+:[ \r\n]/],
+      [PR['PR_PLAIN'], /^\w+/]
+    ]), ['yaml', 'yml']);
