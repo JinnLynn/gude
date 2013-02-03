@@ -34,7 +34,7 @@ console.log = console.log || function(){};
         } else if ( browser.webkit ) {
             browser.safari = true;
         }
-        console.log(browser);
+        // console.log(browser);
         return browser;
     };
 
@@ -84,6 +84,9 @@ console.log = console.log || function(){};
 
         // 使外链在新窗口打开
         $(document).on("click", "a", function(){
+            // 忽略评论区域
+            if( $('#comments').has($(this)) )
+                return true;
             $(this).filter(":not([href*='" + window.location.host + "'])").filter("[href^='http'],[href^='ftp']").attr("target", "_blank");
         });
     });
