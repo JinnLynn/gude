@@ -552,8 +552,9 @@ class Gude(Application):
 
     @subcommand('serve', help='Serve the website')
     @store('-p', '--port', type=int, default=DEFAULT_SERVER_PORT, dest='port', help='The port where the website must be served from.')
+    @true('-s', '--silent', default=False, dest='silent', help='silent mode')
     def serve(self, args):
-        self.startServer(args.port)
+        self.startServer(args.port, args.silent)
 
     @subcommand('publish', help='Publish the website')
     @true('-c', default=False, dest='clean', help='Clean git repo')
@@ -611,10 +612,11 @@ class Gude(Application):
         self.site.build()
         util.logAlways('Site build success.')
 
-    def startServer(self, port):
+    def startServer(self, port, silent):
         try:
-            httpd_ = server.Server(self, port)
-            util.logAlways('Webserver [http://localhost:%d] starting...', port)
+            httpd_ = server.Server(self, port, silent)
+            if not silent:
+                util.logAlways('Webserver [http://localhost:%d] starting...', port)
             httpd_.serve_forever()
         except KeyboardInterrupt, SystemExit:
             util.logAlways( '\nReceived shutdown request. Shutting down...' )

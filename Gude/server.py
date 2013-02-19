@@ -98,11 +98,17 @@ class ServerRequestHandler(SimpleHTTPRequestHandler):
         self.send_response(302 if temporary else 301)
         self.send_header('Location', path)
         self.end_headers()
+
+    def log_request(self, code='-', size='-'):
+        if self.server.isSilent:
+            return
+        SimpleHTTPRequestHandler.log_request(self, code, size)
     
 class Server(HTTPServer):
-    def __init__(self, core, port):
+    def __init__(self, core, port, silent):
         self.core = core
         self.site = core.site
+        self.isSilent = silent
         HTTPServer.__init__(self, ('', port), ServerRequestHandler)
 
     def rebuildSite(self):
