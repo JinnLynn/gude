@@ -92,7 +92,7 @@ class Publisher(object):
             print( 'publish [{server}] fail. command: {cmd}'.format(**data) )
 
     def checkGit(self):
-        if not self.isCommandExists('git'):
+        if not util.isCommandExists('git'):
             print 'GIT is non-existent'
             return False
         if not os.path.isdir('.git'):
@@ -110,22 +110,6 @@ class Publisher(object):
             with codecs.open('index.html', 'w', encoding='utf-8') as fp:
                 fp.write('coming soon...')
         os.system('(git init && git add . && git commit -am "init") > /dev/null')
-
-    def isCommandExists(self, program):
-        def is_exe(fpath):
-            return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-        fpath, fname = os.path.split(program)
-        if fpath:
-            if is_exe(program):
-                return True
-        else:
-            for path in os.environ["PATH"].split(os.pathsep):
-                exe_file = os.path.join(path, program)
-                if is_exe(exe_file):
-                    return True
-
-        return False
 
     def getPublishType(self):
         return self.site.getConfig('publish_type', 'none').lower()

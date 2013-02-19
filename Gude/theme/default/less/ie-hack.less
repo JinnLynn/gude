@@ -1,0 +1,172 @@
+// HACK: IE
+// --------------------------------------------------------
+
+// HACK: IE9BELOW
+// --------------------------------------------------------
+.ie9below {
+    #menu {
+        border-radius: 10px;
+        padding-top: 25px;
+        position: absolute;
+        top: -10px;
+        left: 0;
+
+        li {
+            display: inline;
+            padding: 0 25px 0 0;
+        }
+    }
+    .entry-date {
+        border-radius: 5px;
+        padding: 4px 2px 4px 7px;
+        left: -60px;
+    }
+    .comment-count-content {
+        border-radius:5px;
+        left: -61px;
+    }
+    .entry-content {
+        table {
+            border-collapse:collapse;
+        }
+        tr td {
+            border: 1px solid #ccc;
+        }
+    } 
+}
+
+
+// HACK: IE6 & BELOW
+// --------------------------------------------------------
+.ie6 {
+    #wrapper,
+    #main {
+        width:1160px;
+        background-image:none;
+    }
+    #main {
+        background-image: url("images/bg-noise.png"); // IE6下bg-noise-light.png无法显示
+    }
+    .entry-content a.btn:hover,
+    .btn:hover {
+        padding: 8px 14px;
+    }
+    .entry-content .btn.btn-large:hover,
+    .btn.btn-large:hover {
+        padding:15px 25px;
+    }
+    code {
+        overflow:scroll;
+    }
+    #tools-box li {
+        display: inline;
+        padding:0 2px 0 0;
+    }
+    #tools-box #tool-search input
+    {
+        display: inline;
+    }
+    #pagenavi .nav-older {
+        position: relative;
+        display: block;
+        margin-top: -20px;
+        float:left;
+    }
+    #pagenavi .nav-newer {
+        position: relative;
+        display: block;
+        margin-top: -20px;
+        float:right;
+    }
+    .comment .comment-gravatar {
+        top:12px;
+    }
+    div.comment-count-content {
+        top: -40px;
+    }
+    p.comment-count {
+        margin-left: 13px;
+    }
+    #sidebar {
+        padding-top: 40px;
+    }
+    #comment-form {
+        width: 660px; // 如果不指定 IE6下侧边栏会被压缩 */
+    }
+    #post-list-nav .nav-item {
+        width: 3px;
+        height: 2px; // IE6 下呈长条行 */
+    }
+    .archives ul {
+        margin: 30px 0 20px 140px;
+    }
+    .archives ul li {
+        border: 1px solid #f2f2f2; // HACK: 莫名奇妙 */
+        border-bottom: 1px solid #ccc;
+        box-shadow:none;
+    }
+    .archives ul li span.date {
+        left: -70px;
+        top: 25px;
+    }
+}
+
+
+// HACK: IE7
+// --------------------------------------------------------
+.ie7 {
+    #tools-box li {
+        display: inline;
+        padding:0 2px 0 0;
+    }
+    .comment .comment-gravatar {
+        top:12px;
+    }
+    div.comment-count-content {
+        top: -40px;
+    }
+    #sidebar {
+        padding-top: 40px;
+    }
+    .archives ul li span.date {
+        top: 3px;
+    }
+}
+
+// HACK: IE8
+// --------------------------------------------------------
+.ie8 {
+    #menu li {
+        padding: 0 20px 0 0;
+    }
+    #main {
+        box-shadow: none; // HACK: IE8下使用PIE.htc页面被拉长的问题 */
+    }   
+}
+
+
+// HACK: IE9 & greater
+// -------------------------------------------------------------- 
+// .ie9 .entry-content a:hover {
+//     background-color:#6E6E6E;
+// }
+
+// DEBUG
+// -------------------------------------------------------------- 
+// #main {
+
+//     border: 1px solid red;
+// }
+
+// #content {
+//     border: 1px solid blue;
+// }
+
+// #sidebar {
+//     border: 1px solid green;
+//     clear: right;
+// }
+
+// #footer {
+//     border:1px solid yellow;
+// }

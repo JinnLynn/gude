@@ -1,0 +1,42 @@
+.prettyprinted {
+    &.linenums {
+        padding:0 15px 0 25px;
+    }
+    ol.linenums {
+        padding: 0;
+        margin: 0 0 0 22px;
+
+        li {
+            color: #ccc;
+            border-left: 1px solid #ddd;
+            padding: 0 0 0 10px;
+            margin: 0;
+
+            &:first-child {
+                padding-top:15px;
+            }
+            &:last-child {
+                padding-bottom:15px;
+            }
+        }   
+    }
+    span {
+        color: #000;
+
+        &.str { color: #008200 }  // string content 
+        &.kwd { color: #b80606; font-weight: bold; }  // a keyword 
+        &.com { color: #808080 }  // a comment 
+        &.typ { color: #606 }  // a type name 
+        &.lit { color: #066 }  // a literal value 
+        // punctuation, lisp open bracket, lisp close bracket 
+        &.pun, 
+        &.opn, 
+        &.clo { font-weight: bold; }
+        &.tag { color: #008 }  // a markup tag name 
+        &.atn { color: #027eb6 }  // a markup attribute name 
+        &.atv { color: #080 }  // a markup attribute value 
+        &.dec, 
+        &.var { color: #606 }  // a declaration; a variable name 
+        &.fun { color: red }  // a function name 
+    }
+}
