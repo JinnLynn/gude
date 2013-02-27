@@ -175,12 +175,16 @@ class Site:
                     util.copytree(from_file, to_file_dir)
                 util.logInfo( print_info(from_file, self.getRelativePath(to_file)) )
     
-    def parseLESS(self):
+    def parseLESS(self, is_compress):
         if not util.isCommandExists('lessc'):
             util.die('lessc is non-existent.')
         if not os.path.exists(os.path.join(self.themePath, 'less', 'style.less')):
             util.die('style.less is non-existent.');
-        cmd = 'lessc --yui-compress {} {}'.format(os.path.join(self.themePath, 'less', 'style.less'), os.path.join(self.assetsPath, 'style.css'))
+        cmd = 'lessc {} {} {}'.format(
+            '--yui-compress' if is_compress else '',
+            os.path.join(self.themePath, 'less', 'style.less'), 
+            os.path.join(self.assetsPath, 'style.css')
+            )
         os.system(cmd)
 
     def testPrint(self):
@@ -502,13 +506,14 @@ class Gude(Application):
     @true('-l', '--local', default=False, dest='localmode', help='build in local mode')
     @true('-i', '--info', default=False, dest='print_info', help='print export info')
     @true('--less', default=False, dest='less', help='LESS parse')
+    @true('--less-compress', default=False, dest='less_compress', help='LESS parse with compress')
     def build(self, args):
         if args.print_info:
             util.logLevelSet(logging.NOTSET)
         self.site.isLocalMode = args.localmode
         self.site.checkDir()
-        if args.less:
-            self.site.parseLESS()
+        if args.less_compress or args.less:
+            self.site.parseLESS(args.less_compress)
         self.startBuild()
         if args.preview:
             self.startServer(DEFAULT_SERVER_PORT)
