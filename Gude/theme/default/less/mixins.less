@@ -72,6 +72,13 @@
 
 // Gradients
 #gradient {
+  .clear() {
+    background: none;
+    background-color: none;
+    background-image: none;
+    background-repeat: none;
+    filter:;
+  }
   .horizontal(@startColor: #555, @endColor: #333) {
     background-color: @endColor;
     background-image: -moz-linear-gradient(left, @startColor, @endColor); // FF 3.6+
