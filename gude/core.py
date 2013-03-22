@@ -6,11 +6,12 @@ from glob import glob
 
 import yaml
 from mako.lookup import TemplateLookup
-from commando.commando import *
+from commando import *
 
 import util, server
 from article import *
 from setting import *
+from setting import __version__
 from publisher import *
 
 class Site:
@@ -464,7 +465,7 @@ class Gude(Application):
 
     @command(description='Gude - a simple python static website generator', 
         epilog='Use %(prog)s {command} -h to get help on individual commands')
-    @version('-v', version='Gude ' + VERSION)
+    @version('-v', version='Gude ' + __version__)
     def main(self, args):
         pass
 

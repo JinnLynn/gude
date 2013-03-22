@@ -258,6 +258,9 @@ class Article(object):
     def contentFilter(self, content):
         if self.isMarkdown:
             content = util.markdown(content)
+        #! 临时将 plugins目录添加到系统目录 
+        #? 如果不加 mod = __import__(f) 会失败 WHY？
+        sys.path.insert(0, os.path.join(SCRIPT_PATH, 'plugins'))
         filters = self.site.contentFilter;
         for f in filters:
             #if True:
@@ -266,6 +269,8 @@ class Article(object):
                 content = getattr(mod, 'parse')(content, gude_site=self.site, gude_article=self)
             except:
                 util.logWarning( 'content filter fail: %s', f )
+        #! 删除目录
+        del sys.path[0]
         return content
 
     def exportSitemap(self):

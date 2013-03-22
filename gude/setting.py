@@ -1,14 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 import os
 
+# 版本
+__version__ = '1.0.2'
+
 # 是否开发模式
 DEV_MODE = True
-
-# 版本
-VERSION = '0.2'
-
-# 自我介绍
-SELF_INTRODUCTION = 'Gude v%s' % VERSION
 
 # 默认测试服务器端口
 DEFAULT_SERVER_PORT = 8910

@@ -1,6 +1,9 @@
-*.pac
 *.pyc
-test/
+*.egg-info
+build
+dist
+test
+
 Gude/test.py
 
 # Windows
