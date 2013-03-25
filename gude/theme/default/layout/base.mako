@@ -55,8 +55,8 @@ ${self.body()}
 
 <div id="footer">
     <div id="footer-left">
-        2012 Powered By <a href="http://jeeker.net/projects/gude/" title="a simple python static website generator">Gude</a> &#38; <a href="http://jeeker.net/" title="Jeeker">Vellum</a>. 
-        Licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.
+        2012 Powered By <a href="http://jeeker.net/projects/gude/" title="a simple python static website generator">Gude</a>. Code licensed under <a href="http://opensource.org/licenses/MIT">MIT License</a>,
+        articles licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.
     </div><!-- #footer-left -->
     <div id="footer-right">
     </div><!-- #footer-right -->

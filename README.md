@@ -10,6 +10,10 @@
 
 ![Gude](http://i.imgur.com/qBb5l.png)
 
+## LICENSE
+
+The MIT license.
+
 For more information, please visit project page at http://jeeker.net/projects/gude/. 
 
 [Gude]: http://jeeker.net/projects/gude/
