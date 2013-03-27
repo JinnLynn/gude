@@ -28,8 +28,8 @@ gude init [-h|-f]
 
 edit `site.yaml` for public settings and `privacy.yaml` for private settings, here are example: [site-example.yaml][] [privacy-example.yaml][]
 
-[site-example.yaml]: https://github.com/JinnLynn/gude/blob/master/gude/docs/site-example.yaml
-[privacy-example.yaml]: https://github.com/JinnLynn/gude/blob/master/gude/docs/privacy-example.yaml
+[site-example.yaml]: https://github.com/JinnLynn/gude/blob/master/docs/site-example.yaml
+[privacy-example.yaml]: https://github.com/JinnLynn/gude/blob/master/docs/privacy-example.yaml
 
 #### add new article
 
