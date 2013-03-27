@@ -519,7 +519,7 @@ class Gude(Application):
         if args.preview:
             self.startServer(DEFAULT_SERVER_PORT)
 
-    @subcommand('add', help='add new article')
+    @subcommand('add', help='Add new article')
     @store('-t', default='Untitled', dest='title', help='article title')
     @store('-f', default='', dest='filename', help='article filename, no extension')
     @store('--status', default='', dest='status', help='article status')
@@ -563,7 +563,7 @@ class Gude(Application):
         self.startServer(args.port, args.silent)
 
     @subcommand('publish', help='Publish the website')
-    @true('-c', default=False, dest='clean', help='Clean git repo')
+    @true('-c', '--clean' default=False, dest='clean', help='Clean git repo')
     @true('-f', '--force', default=False, dest='force', help='force update')
     @true('-b', '--build', default=False, dest='build', help='build site before publish')
     def publish(self, args):
@@ -578,9 +578,9 @@ class Gude(Application):
             publisher.publish(force=args.force)
 
     @subcommand('backup', help='Backup site with GIT')
-    @true('-c', default=False, dest='clean', help='Clean git repo')
-    @true('--remote', default=False, dest='remote', help='push to remote server')
-    @true('-f', default=False, dest='force', help='force push')
+    @true('-c', '--clean', default=False, dest='clean', help='Clean git repo')
+    @true('-r', '--remote', default=False, dest='remote', help='push to remote server')
+    @true('-f', '--force', default=False, dest='force', help='force push')
     def backup(self, args):
         # 使用GIT备份
 

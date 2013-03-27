@@ -52,13 +52,13 @@ gude serve [-p PORT|--port PORT] [-s|--silent]
 #### publish site
 
 ```
-gude [-c] [-f|--force] [-b|--build]
+gude [-c|--clean] [-f|--force] [-b|--build]
 ```
 
 #### backup site
 
 ```
-gude [-c] [-f] [--remote]
+gude [-c|--clean] [-f|--clean] [-r|--remote]
 ```
 
 ## LICENSE
