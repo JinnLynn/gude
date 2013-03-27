@@ -563,7 +563,7 @@ class Gude(Application):
         self.startServer(args.port, args.silent)
 
     @subcommand('publish', help='Publish the website')
-    @true('-c', '--clean' default=False, dest='clean', help='Clean git repo')
+    @true('-c', '--clean', default=False, dest='clean', help='Clean git repo')
     @true('-f', '--force', default=False, dest='force', help='force update')
     @true('-b', '--build', default=False, dest='build', help='build site before publish')
     def publish(self, args):
