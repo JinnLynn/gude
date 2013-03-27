@@ -10,6 +10,57 @@
 
 ![Gude](http://i.imgur.com/qBb5l.png)
 
+## Installation
+
+```
+git clone git://github.com/JinnLynn/gude.git && cd gude && python setup.py install
+```
+
+## USAGE
+
+#### create a new gude site
+
+```
+gude init [-h|-f]
+```
+
+#### configuring gude site
+
+edit `site.yaml` for public settings and `privacy.yaml` for private settings, here are example: [site-example.yaml][] [privacy-example.yaml][]
+
+[site-example.yaml]: https://github.com/JinnLynn/gude/blob/master/gude/docs/site-example.yaml
+[privacy-example.yaml]: https://github.com/JinnLynn/gude/blob/master/gude/docs/privacy-example.yaml
+
+#### add new article
+
+```
+gude add -t "TITLE" -f "FILENAME" [--status "STATUS"] [--layout "LAYOUT"] [--html]
+```
+
+#### build site
+
+```
+gude build [-l|--local] [-p|--preview] [--less] [--less-compress] [-i|--info]
+```
+
+#### serve site
+
+```
+gude serve [-p PORT|--port PORT] [-s|--silent]
+```
+
+#### publish site
+
+```
+gude [-c] [-f|--force] [-b|--build]
+```
+
+#### backup site
+
+```
+gude [-c] [-f] [--remote]
+```
+
 ## LICENSE
 
 The MIT license.

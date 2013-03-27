@@ -1,0 +1,63 @@
+---
+domain:                 http://jeeker.net/
+subdirectory:           /
+title:                  Jeeker
+tagline:                Seeking more!
+author:                 JinnLynn
+category:               [Developer, Projects, Thinking, Misc]
+
+num_per_page:           5
+num_in_feed:            10
+num_in_archive:         50
+
+theme:                  default
+default_layout:         post
+
+# 头部菜单 默认已包括首页 Home
+header_menu:
+    - title:            Projects
+      url:              /projects/
+    - title:            Tags
+      url:              /tags/
+    - title:            Archives
+      url:              /archives/
+    - title:            Feed
+      url:              /atom.xml
+    - title:            About
+      url:              /about/
+
+# 外部服务设置
+# 评论服务 duoshuo disqus 默认duoshuo
+comment_service:            duoshuo
+comment_service_shortname:  jeeker
+
+google_analytics_track_id:  MY_GA_TRACK_ID
+# 如果使用了第三方Feed托管服务，则将其产生的Feed地址配置于此，留空将使用本地默认
+feed_url:                   ~
+
+# 指定生成的文件名 src: 相对文章目录 dst: 相对发布目录
+designated:
+    - src:      2000-01-01-projects.md
+      dst:      projects/index.html
+    - src:      2000-01-01-about.html
+      dst:      about/index.html
+    - src:      2000-01-01-pac.html
+      dst:      pac/index.html
+
+content_filter:         [Shortcode, CenterElement]
+
+# 拷贝文件 src: 相对站点static目录 dst: 相对发布目录
+file_copy:
+    - src:      htaccess
+      dst:      .htaccess
+    - src:      CNAME
+      dst:      CNAME
+    - src:      assets/*
+      dst:      assets/
+    - src:      google132fd31ec1dcee07.html
+      dst:      google132fd31ec1dcee07.html
+
+# 本地模式
+local_domain:           http://local.jeeker.net:8910/
+local_subdirectory:     /
+...

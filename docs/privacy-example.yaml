@@ -1,0 +1,23 @@
+---
+# publish git gitftp rsync none
+# git模式默认仅支持发布到github.com
+publish_type:           rsync
+
+# gitftp 配置
+ftp_server:             ftp://192.18.1.1/
+ftp_subdirectory:       public_html/jeeker.net
+ftp_usr:                MY_USERNAME
+ftp_pwd:                MY_PASSWORD
+
+# git 配置
+# 如果是github_project_page 则deploy发布到gh-pages分支 site内容发布
+# 否则deploy发布到master 站点原始发布到source
+github_project_page:    no
+git_remote:             git@github.com:JinnLynn/jinnlynn.github.com.git
+
+# rsync 配置
+rsync_server:           192.168.1.1
+rsync_subdirectory:     /var/www
+rsync_usr:              MY_USERNAME
+rsync_sshkey:           MY_KEY_FILE
+...
