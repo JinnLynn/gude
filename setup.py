@@ -2,7 +2,7 @@ import sys, os
 from gude.setting import __version__
 
 try:
-    from setuptools import setup, find_packages, findall
+    from setuptools import setup, find_packages
     setup_params = {
         'entry_points': {
             'console_scripts': [
@@ -11,8 +11,10 @@ try:
         },
         'zip_safe': False,
     }
-except ImportError:
-    from distutils.core import setup
+except ImportError, e:
+    print('ERROR: {}'.format(e))
+    sys.exit(1)
+    # from distutils.core import setup
 
 data_files = []
 root_dir = os.path.dirname(__file__)
