@@ -42,7 +42,6 @@ a {
         color: #00a0e3;
         border: 0;
         outline: none;
-        .transition(color 0.3s);
     }
     &:hover,
     &:focus {
@@ -274,16 +273,19 @@ hr.breaking-line {
         text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         text-overflow: ellipsis;
         white-space: nowrap;
-        cursor: pointer;
 
-        a,
-        a:visited { 
-            color: #404040;   
-            .transition(color 0.3s);
-        }
-        a:hover { 
-            text-decoration: none;
-            color:#000; 
+        a {
+            &,
+            &:link,
+            &:active,
+            &:visited {
+                color: #404040;
+            }
+            &:hover,
+            &:focus { 
+                color:#000; 
+                .transition(color 0.3s);
+            }
         }
     }
     .entry-date {
