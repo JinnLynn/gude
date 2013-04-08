@@ -113,7 +113,7 @@ class Article(object):
 
         # 时间超出现在的文章
         if self.date > datetime.now():
-            util.logWarning( "date out: [%s] %s", (str(self.date), relative_source_path) )
+            util.logWarning( "date out: %s", relative_source_path)
             return False
 
         # 不列出的文章
